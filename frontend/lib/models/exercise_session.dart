@@ -8,7 +8,7 @@ class ExerciseSession {
   final SessionAnalytics analytics;
   // Do not need to grab the session status as flutter will not
   // be handling session status directly, instead receiving ExerciseSession
-  // info from python endpoint
+  // info from python endpoint once session is over
 
   ExerciseSession({
     required this.sessionLength,
@@ -16,4 +16,13 @@ class ExerciseSession {
     required this.date,
     required this.analytics,
   });
+
+  factory ExerciseSession.fromJson(Map<String, dynamic> json) {
+    return ExerciseSession(
+      sessionLength: Duration(seconds: json['session_length']),
+      sessionExercise: Exercise.fromJson(json['session_exercise']),
+      date: DateTime.parse(json['date']),
+      analytics: json['analytics'],
+    );
+  }
 }
