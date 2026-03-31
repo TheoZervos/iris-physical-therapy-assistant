@@ -1,31 +1,66 @@
-# Source Code
-This directory will store all source code sorted into categories:
+# 🌿 Iris Physical Therapy Assistant — Backend
 
-1. Schemas
-2. Services
-3. Utils
-4. UI
+An intelligent, AI-powered physical therapy backend designed to actively monitor, assist, and correct patient movements during guided exercises.
 
-This sorting is to help with separation of concerns, organizing our
-code in such a way that wires do not get crossed.
+---
 
-## Schemas
-Schemas outline the properties that define a specific peice of data.
-The `project_code/schemas` folder is where we will store our pydantic models
-(i.e. using BaseModel). Files should be split into the related sections.
-For example, in a project accessing a stock market API and a weather API,
-our stock market models would go into a file `stock.py`, and 
-our weather models should go into a file `weather.py`
+## ✨ Overview
 
-## Services
-Services are specialized software components or classes designed to do
-certain logic, background tasks or functional utilities. This should be sorted
-similarly to schemas, sorted by the tasks that are being completed. (i.e a file 
-that stores the functions for interacting with the weather API)
+This backend is a pure Python service built on Google's **MediaPipe Tasks Vision API** for high-performance, real-time skeletal tracking. It captures a live camera feed and maps **33 human body landmarks** (shoulders, elbows, joints, etc.) with high accuracy and low latency, running natively on CPU.
 
-## Utils
-Utils are similar to services, but they are not specialized and are more generic.
-Think of a function that is used to pick between two strings based on a few identifiers.
-These kind of function can exist in a file in the `project_code/utils` folder to prevent
-muddying up our services. An example includes a `parse_utils.py` file that has
-generic functions that can be used to help parse string data.
+---
+
+## 🚀 Getting Started
+
+Dependencies are managed with [`uv`](https://github.com/astral-sh/uv) for lightning-fast environments. To launch the live tracking feed:
+
+```bash
+cd backend
+uv sync
+uv run iris-track
+```
+
+Press **`q`** on the camera window at any time to exit and view your session's performance metrics.
+
+### CLI Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--source` | `int` | `0` | Camera device index (`0` = built-in webcam) |
+| `--model-complexity` | `int` | `1` | MediaPipe model: `0` lite, `1` full, `2` heavy |
+| `--detection-confidence` | `float` | `0.5` | Min confidence to initially detect a person (0.0–1.0) |
+| `--tracking-confidence` | `float` | `0.5` | Min confidence to maintain tracking across frames (0.0–1.0) |
+
+**Example** — run with an external camera using the fastest model:
+
+```bash
+uv run iris-track --source 1 --model-complexity 0
+```
+
+> **Note:** Because the CLI script is registered in `pyproject.toml`, `uv run iris-track [flags]` is equivalent to `uv run python -m src.main [flags]`.
+
+---
+
+## 🏗️ Directory Architecture
+
+The project enforces **separation of concerns** to keep the codebase clean and modular.
+
+```
+backend/
+├── schemas/    # Data contracts
+├── services/   # Core logic & engines
+├── utils/      # Shared helpers
+└── ...
+```
+
+### `schemas/`
+
+Pydantic models defining strict data contracts (e.g., `PoseFrame`, `Landmark`). Files are split by domain — in a project with both a stock API and a weather API, you'd have `stock.py` and `weather.py`.
+
+### `services/`
+
+Specialized components containing core business logic, background tasks, or functional utilities (e.g., the `BodyTracker` engine). Organized by task domain, mirroring the schema structure.
+
+### `utils/`
+
+Generic, reusable helper functions that aren't tied to a specific service — mathematical transformations, video source validations (`video_utils.py`), string parsing, and similar pure functions that would otherwise clutter the services layer.

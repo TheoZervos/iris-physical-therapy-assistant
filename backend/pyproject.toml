@@ -1,0 +1,14 @@
+[project]
+name = "iris-body-tracking"
+version = "0.1.0"
+description = "Body pose tracking service for the Iris Physical Therapy Assistant"
+requires-python = ">=3.10"
+dependencies = [
+    "mediapipe>=0.10.0",
+    "opencv-python>=4.8.0",
+    "numpy>=1.24.0",
+    "pydantic>=2.0.0",
+]
+
+[project.scripts]
+iris-track = "src.main:main"
