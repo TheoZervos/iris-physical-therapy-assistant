@@ -8,16 +8,20 @@ class ExerciseList {
 
   void addExercise(Exercise exercise) {
     exerciseList.add(exercise);
-    if (exerciseByRegion.containsKey(exercise.muscleRegion)) {
-      exerciseByRegion[exercise.muscleRegion]!.add(exercise);
-    } else {
-      exerciseByRegion[exercise.muscleRegion] = [exercise];
+    for (final String muscleRegion in exercise.muscleRegions) {
+      if (exerciseByRegion.containsKey(muscleRegion)) {
+        exerciseByRegion[muscleRegion]!.add(exercise);
+      } else {
+        exerciseByRegion[muscleRegion] = [exercise];
+      }
     }
   }
 
   void removeExercise(Exercise exercise) {
     exerciseList.remove(exercise);
-    exerciseByRegion[exercise.muscleRegion]?.remove(exercise);
+    for (final String muscleRegion in exercise.muscleRegions) {
+      exerciseByRegion[muscleRegion]?.remove(exercise);
+    }
   }
 
   void clearExercises() {

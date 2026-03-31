@@ -9,10 +9,31 @@ class ExerciseListViewModel extends ChangeNotifier {
 
   Future<void> fetchExercises(String jsonFilePath) async {
     final results = await ExerciseService().fetchExercises(jsonFilePath);
-    final exercisesByMuscleRegion =
-        results['exercisesByMuscleRegion'] as Map<String, List<Exercise>>;
+
+    // empty exercise list
+    if (results['exercises'].isEmpty) {
+      exerciseList = ExerciseList(exerciseList: [], exerciseByRegion: {});
+      notifyListeners();
+      return;
+    }
+
+    // building list of exercises
+    List<Exercise> exercises = results['exercises'];
+
+    // building muscle regions list
+    Map<String, List<Exercise>> exercisesByMuscleRegion = {};
+    for (final Exercise exercise in exercises) {
+      for (final String muscleGroup in exercise.muscleRegions) {
+        if (!exercisesByMuscleRegion.containsKey(muscleGroup)) {
+          exercisesByMuscleRegion[muscleGroup] = [];
+        }
+        exercisesByMuscleRegion[muscleGroup]!.add(exercise);
+      }
+    }
+
+    // creating exercise list object
     exerciseList = ExerciseList(
-      exerciseList: results['exercises'] as List<Exercise>,
+      exerciseList: exercises,
       exerciseByRegion: exercisesByMuscleRegion,
     );
     notifyListeners();
@@ -22,6 +43,7 @@ class ExerciseListViewModel extends ChangeNotifier {
     List<Exercise> exercises = exerciseList.search(searchQuery);
     return exercises.map((e) => ExerciseViewModel(exercise: e)).toList();
   }
+
   // private void applyFilters() {}
   // void addFilter(filter) {}
   // void removeFilter(filter) {}

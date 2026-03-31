@@ -19,10 +19,10 @@ class ExerciseSession {
 
   factory ExerciseSession.fromJson(Map<String, dynamic> json) {
     return ExerciseSession(
-      sessionLength: Duration(seconds: json['session_length']),
-      sessionExercise: Exercise.fromJson(json['session_exercise']),
+      sessionLength: Duration(seconds: json['sessionLength']),
+      sessionExercise: Exercise.fromJson(json['sessionExercise']),
       date: DateTime.parse(json['date']),
-      analytics: json['analytics'],
+      analytics: SessionAnalytics.fromJson(json['analytics']),
     );
   }
 }

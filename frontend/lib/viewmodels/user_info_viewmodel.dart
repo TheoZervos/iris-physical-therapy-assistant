@@ -6,7 +6,7 @@ class UserInfoViewModel extends ChangeNotifier {
   late final ExerciseListViewModel likedExercises;
   String _name = "";
 
-  Future<void> fetchuserInfo(String folderPath) async {
+  Future<void> fetchUserInfo(String folderPath) async {
     final ExerciseHistoryViewModel exerciseHistory = ExerciseHistoryViewModel();
     final ExerciseListViewModel likedExercises = ExerciseListViewModel();
     await exerciseHistory.fetchPastExerciseSessions(

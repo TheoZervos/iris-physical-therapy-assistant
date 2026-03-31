@@ -6,7 +6,7 @@ class Exercise {
   final String exerciseId;
   final List<String> exerciseAliases;
   bool isFavorite;
-  final String muscleRegion;
+  final List<String> muscleRegions;
 
   Exercise({
     required this.exerciseName,
@@ -16,7 +16,7 @@ class Exercise {
     required this.exerciseId,
     required this.exerciseAliases,
     required this.isFavorite,
-    required this.muscleRegion
+    required this.muscleRegions
   });
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
@@ -28,7 +28,7 @@ class Exercise {
       exerciseId: json['exerciseId'] as String,
       exerciseAliases: List<String>.from(json['exerciseAliases'] as List),
       isFavorite: json['isFavorite'] as bool,
-      muscleRegion: json['muscleRegion'] as String,
+      muscleRegions: List<String>.from(json['muscleRegions'] as List),
     );
   }
 }

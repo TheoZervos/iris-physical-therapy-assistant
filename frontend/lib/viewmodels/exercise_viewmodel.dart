@@ -11,7 +11,7 @@ class ExerciseViewModel {
   List<String> get exerciseImages => exercise.exerciseImages;
   String get exerciseId => exercise.exerciseId;
   List<String> get exerciseAliases => exercise.exerciseAliases;
-  String get muscleRegion => exercise.muscleRegion;
+  List<String> get muscleRegions => exercise.muscleRegions;
   bool get isFavorite => exercise.isFavorite;
 
   void toggleExerciseFavorite() {

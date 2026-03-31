@@ -1,0 +1,22 @@
+{
+    "exercises": [
+        { 
+            "exerciseName": "Cross Arm Stretch",
+            "tutorialLink": "https://youtu.be/-1K0m5ywRcY?si=uzEGyS0yBZLhmaVG",
+            "exerciseDescription": "1. Extend one arm and using the opposite hand, slowly pull the extended arm across your upper chest.\n2. Continue pulling until you feel a comfortable stretch in the extended arms shoulder.\n3. Hold this position for 15-30 seconds.",
+            "exerciseImages": ["assets/images/cross_arm_stretch.png"],
+            "exerciseId": "CAS1",
+            "exerciseAliases": [
+                "Cross-Body Arm Stretch",
+                "Arm Across Chest Stretch",
+                "Cross-Body Shoulder Stretch"
+            ],
+            "isFavorite": false,
+            "muscleRegions": [
+                "Shoulders", 
+                "Rear Deltoids",
+                "Rotator Cuff"
+            ]
+        }
+    ]
+}
