@@ -60,6 +60,9 @@ flutter:
     - assets/user_data/
     - assets/images/
     - assets/images/cross_arm_stretch/
+    - assets/images/external_rotation/
+    - assets/images/internal_rotation/
+    - assets/images/standing_row/
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
