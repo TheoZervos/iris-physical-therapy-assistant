@@ -3,13 +3,11 @@
 Captures live video from the device camera and runs real-time
 pose estimation, detecting 33 body landmarks per frame.
 """
-import sys
 import time
 from typing import AsyncGenerator
 from pathlib import Path
 
 import cv2
-import math
 import mediapipe as mp
 import numpy as np
 from mediapipe.tasks import python
@@ -19,6 +17,7 @@ from mediapipe.tasks.python import vision
 from src.schemas.pose_schema import LANDMARK_NAMES, Landmark, PoseFrame
 from src.utils.video_utils import get_camera_source, get_video_properties
 from src.utils.drawing_utils import draw_landmarks, draw_hud
+from src.utils.tracking_calculation_utils import calculate_angle
 
 
 class BodyTracker:
@@ -129,40 +128,7 @@ class BodyTracker:
 
         return frame, pose_frame
 
-    def _calculate_angle(self, pose_frame, joint):
-        JOINT_MAP = { #NOTE: right and left seems backwards?
-            "Right Elbow": (12, 14, 16),
-            "Left Elbow": (11, 13, 15),
-        }
-
-        landmark1, landmark2, landmark3 = JOINT_MAP.get(joint)
-
-        a = (pose_frame.landmarks[landmark1].x, pose_frame.landmarks[landmark1].y)
-        b = (pose_frame.landmarks[landmark2].x, pose_frame.landmarks[landmark2].y)
-        c = (pose_frame.landmarks[landmark3].x, pose_frame.landmarks[landmark3].y)
-
-
-
-        ba = [a[i] - b[i] for i in range(len(a))]
-        bc = [c[i] - b[i] for i in range(len(c))]
-
-        dotProduct = sum(ba[i] * bc[i] for i in range(len(ba)))
-        mag_ba = math.sqrt(sum(x * x for x in ba))
-        mag_bc = math.sqrt(sum(x * x for x in bc))
-
-        cos_angle = dotProduct / (mag_ba * mag_bc)
-        angle = math.degrees(math.acos(cos_angle))
-
-        sys.stdout.write(
-            f"\rAngle: {angle:.3f} | "
-            f"A: x={a[0]:.3f}, y={a[1]:.3f} | "
-            f"B: x={b[0]:.3f}, y={b[1]:.3f} | "
-            f"C: x={c[0]:.3f}, y={c[1]:.3f}    "
-        )
-        sys.stdout.flush()
-        return angle
-
-    async def process_stream(self) -> AsyncGenerator[PoseFrame, None, None]:
+    async def process_stream(self) -> AsyncGenerator[PoseFrame, None]:
         """Generator that yields PoseFrame objects from the live camera.
 
         Yields:
@@ -229,12 +195,11 @@ class BodyTracker:
                 self._fps_history.append(fps)
 
                 #Calculate Angle
-                joint = "Left Elbow"
-                angle = self._calculate_angle(pose_frame, joint)
-                #print(angle)
+                joint = "Right Elbow"
+                angle = calculate_angle(pose_frame, joint)
 
                 # Draw HUD
-                annotated_frame = draw_hud(annotated_frame, pose_frame, fps)
+                annotated_frame = draw_hud(annotated_frame, pose_frame, fps, angle)
 
                 # Display
                 cv2.imshow("Iris Body Tracking", annotated_frame)
