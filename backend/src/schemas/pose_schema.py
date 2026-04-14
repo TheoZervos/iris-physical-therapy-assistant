@@ -45,6 +45,8 @@ JOINT_MAP: dict[str, tuple[int, int, int]] = {
     "right_elbow": (12, 14, 16),
     "left_shoulder": (12, 11, 15),
     "right_shoulder": (11, 12, 16),
+    "left_knee": (23, 25, 27),
+    "right_knee": (24, 26, 28),
 }
 
 
