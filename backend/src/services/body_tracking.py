@@ -176,17 +176,16 @@ class BodyTracker:
                 if not success:
                     continue
 
-                # Flip horizontally for a mirror-like experience
-                frame = cv2.flip(frame, 1)
-
                 # Process the frame
                 current_time_ms = time.time() * 1000
                 timestamp_ms = int(current_time_ms - start_time_ms)
                 if timestamp_ms <= 0:
                     timestamp_ms = 1  # MediaPipe timestamp strictly positive and increasing
-
+                    
+                # Add landmarks (flip for mirror)
                 annotated_frame, pose_frame = self._process_frame(frame, timestamp_ms)
                 draw_landmarks(annotated_frame, pose_frame.landmarks)
+                annotated_frame = cv2.flip(annotated_frame, 1)
 
                 # Calculate FPS
                 current_time = time.time()
@@ -194,14 +193,14 @@ class BodyTracker:
                 prev_time = current_time
                 self._fps_history.append(fps)
 
-                #Calculate Angle
-                joint = "Right Elbow"
+                # Calculate Angle
+                joint = "right_elbow"
                 angle = calculate_angle(pose_frame, joint)
 
                 # Draw HUD
                 annotated_frame = draw_hud(annotated_frame, pose_frame, fps, angle)
 
-                # Display
+                # Flip (for mirror like experience) and display
                 cv2.imshow("Iris Body Tracking", annotated_frame)
 
                 # Quit on 'q'
