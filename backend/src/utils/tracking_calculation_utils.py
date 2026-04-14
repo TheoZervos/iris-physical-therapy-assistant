@@ -1,11 +1,7 @@
 import math
+from src.schemas.pose_schema import JOINT_MAP, PoseFrame
 
-def calculate_angle(pose_frame, joint) -> float | None:
-    JOINT_MAP = { #NOTE: right and left seems backwards?
-        "Right Elbow": (12, 14, 16),
-        "Left Elbow": (11, 13, 15),
-    }
-    
+def calculate_angle(pose_frame: PoseFrame, joint: str) -> float | None:    
     # Getting the landmarks for requested joint
     landmark1, landmark2, landmark3 = JOINT_MAP.get(joint)
     if not all(0 <= lm < len(pose_frame.landmarks) for lm in [landmark1, landmark2, landmark3]):
