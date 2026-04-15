@@ -176,25 +176,16 @@ class BodyTracker:
                 if not success:
                     continue
 
-                # Process the frame BEFORE flipping so landmark coords match the
-                # original image coordinate system (x increases left-to-right).
+                # Process the frame
                 current_time_ms = time.time() * 1000
                 timestamp_ms = int(current_time_ms - start_time_ms)
                 if timestamp_ms <= 0:
                     timestamp_ms = 1  # MediaPipe timestamp strictly positive and increasing
-
-                _, pose_frame = self._process_frame(frame, timestamp_ms)
-
-                # Flip horizontally AFTER detection for a mirror-like display.
-                annotated_frame = cv2.flip(frame, 1)
-
-                # Mirror landmark x-coords (x → 1-x) so they line up with the
-                # flipped display when drawn.
-                mirrored_landmarks = [
-                    lm.model_copy(update={"x": 1.0 - lm.x})
-                    for lm in pose_frame.landmarks
-                ]
-                draw_landmarks(annotated_frame, mirrored_landmarks)
+                    
+                # Add landmarks (flip for mirror)
+                annotated_frame, pose_frame = self._process_frame(frame, timestamp_ms)
+                draw_landmarks(annotated_frame, pose_frame.landmarks)
+                annotated_frame = cv2.flip(annotated_frame, 1)
 
                 # Calculate FPS
                 current_time = time.time()
@@ -203,13 +194,13 @@ class BodyTracker:
                 self._fps_history.append(fps)
 
                 # Calculate angles for both elbows
-                right_angle = calculate_angle(pose_frame, "Right Elbow")
-                left_angle = calculate_angle(pose_frame, "Left Elbow")
+                right_angle = calculate_angle(pose_frame, "right_elbow")
+                left_angle = calculate_angle(pose_frame, "left_elbow")
 
                 # Draw HUD
                 annotated_frame = draw_hud(annotated_frame, pose_frame, fps, right_angle, left_angle)
 
-                # Display
+                # Flip (for mirror like experience) and display
                 cv2.imshow("Iris Body Tracking", annotated_frame)
 
                 # Quit on 'q'

@@ -64,6 +64,7 @@ def calculate_angle(pose_frame: PoseFrame, joint: str) -> Optional[float]:
     """
     entry = JOINT_MAP.get(joint)
     if entry is None:
+
         return None
 
     base_idx, vertex_idx, end_idx, side_sign = entry

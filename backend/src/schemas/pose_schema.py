@@ -2,7 +2,6 @@
 
 from pydantic import BaseModel, Field
 
-
 # Mapping of MediaPipe's 33 pose landmark indices to human-readable names
 LANDMARK_NAMES: dict[int, str] = {
     0: "nose",
@@ -38,6 +37,16 @@ LANDMARK_NAMES: dict[int, str] = {
     30: "right_heel",
     31: "left_foot_index",
     32: "right_foot_index",
+}
+
+# Joint map to map joint names to the landmarks that form their angles
+JOINT_MAP: dict[str, tuple[int, int, int]] = {
+    "left_elbow": (11, 13, 15),
+    "right_elbow": (12, 14, 16),
+    "left_shoulder": (12, 11, 15),
+    "right_shoulder": (11, 12, 16),
+    "left_knee": (23, 25, 27),
+    "right_knee": (24, 26, 28),
 }
 
 
