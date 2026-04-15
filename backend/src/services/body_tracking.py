@@ -193,12 +193,12 @@ class BodyTracker:
                 prev_time = current_time
                 self._fps_history.append(fps)
 
-                # Calculate Angle
-                joint = "right_elbow"
-                angle = calculate_angle(pose_frame, joint)
+                # Calculate angles for both elbows
+                right_angle = calculate_angle(pose_frame, "right_elbow")
+                left_angle = calculate_angle(pose_frame, "left_elbow")
 
                 # Draw HUD
-                annotated_frame = draw_hud(annotated_frame, pose_frame, fps, angle)
+                annotated_frame = draw_hud(annotated_frame, pose_frame, fps, right_angle, left_angle)
 
                 # Flip (for mirror like experience) and display
                 cv2.imshow("Iris Body Tracking", annotated_frame)
