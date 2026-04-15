@@ -65,58 +65,29 @@ def calculate_angle(pose_frame: PoseFrame, joint: str) -> Optional[float]:
     entry = JOINT_MAP.get(joint)
     if entry is None:
       return None
-
+  
     base_idx, vertex_idx, end_idx, side_sign = entry
-    landmark_indices = (base_idx, vertex_idx, end_idx)
-
-    # Make sure all three landmarks are present
-    if not all(0 <= idx < len(pose_frame.landmarks) for idx in landmark_indices):
+    landmarks = (base_idx, vertex_idx, end_idx)
+  
+    if not all(0 <= lm < len(pose_frame.landmarks) for lm in landmarks):
         return None
-
+    
     # Extract 2-D coordinates (normalised 0-1)
-    a = (pose_frame.landmarks[base_idx].x, pose_frame.landmarks[base_idx].y)
-    b = (pose_frame.landmarks[vertex_idx].x, pose_frame.landmarks[vertex_idx].y)
-    c = (pose_frame.landmarks[end_idx].x, pose_frame.landmarks[end_idx].y)
+    a = (pose_frame.landmarks[base_idx].x, pose_frame.landmarks[base_idx].y, pose_frame.landmarks[base_idx].z)
+    b = (pose_frame.landmarks[vertex_idx].x, pose_frame.landmarks[vertex_idx].y, pose_frame.landmarks[vertex_idx].z)
+    c = (pose_frame.landmarks[end_idx].x, pose_frame.landmarks[end_idx].y, pose_frame.landmarks[end_idx].z)
 
     return side_sign * _signed_angle(a, b, c)
 
-
-def normalize_angle(angle: float, base_angle: float) -> float:
-    """Normalize *angle* relative to *base_angle*.
-
-    Returns the signed deviation of *angle* from *base_angle*,
-    wrapped to the range (-180, +180].
-
-    Example:
-        If base_angle = 0 and angle = 90 → returns 90.
-        If base_angle = 0 and angle = -90 → returns -90.
-        If base_angle = 45 and angle = 50 → returns 5.
-
-    Args:
-        angle: The measured angle in degrees.
-        base_angle: The reference / rest-position angle in degrees.
-
-    Returns:
-        Normalised deviation in degrees (-180, +180].
-    """
-    delta = angle - base_angle
-    # Wrap into (-180, +180]
-    while delta > 180:
-        delta -= 360
-    while delta <= -180:
-        delta += 360
-    return delta
-
 # ──────────────────────── private helpers ────────────────────────
 
-
 def _signed_angle(
-    a: tuple[float, float],
-    b: tuple[float, float],
-    c: tuple[float, float],
+    a: tuple[float, float, float],
+    b: tuple[float, float, float],
+    c: tuple[float, float, float],
 ) -> float:
-    ba = (a[0] - b[0], a[1] - b[1])
-    bc = (c[0] - b[0], c[1] - b[1])
+    ba = (a[0] - b[0], a[1] - b[1], a[2] - b[2])
+    bc = (c[0] - b[0], c[1] - b[1], a[2] - b[2])
 
     dot = ba[0] * bc[0] + ba[1] * bc[1]
     cross = ba[0] * bc[1] - ba[1] * bc[0]
