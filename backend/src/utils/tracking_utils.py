@@ -42,6 +42,48 @@ JOINT_MAP: dict[str, tuple[int, int, int, int]] = {
     # "Left Hip":       (11, 23, 25, +1),  # left_shoulder  → left_hip  → left_knee
 }
 
+def get_facing_direction(pose_frame: PoseFrame):
+    """Determine the direction that the user is facing
+
+    Args:
+        pose_frame (PoseFrame): The current frame's pose data.
+        
+    Returns:
+        The direction the user is facing
+        ["front", "back", "left", "right", "unknown"]
+    """
+    if not all(0 <= lm < len(pose_frame.landmarks) for lm in [23, 24, 11, 12]):
+        return "unknown"
+    
+    left_hip = pose_frame.landmarks[23]
+    right_hip = pose_frame.landmarks[24]
+    left_shoulder = pose_frame.landmarks[11]
+    right_shoulder = pose_frame.landmarks[12]
+    
+    # get differences in hips and shoulders
+    hip_x_diff = left_hip.x - right_hip.x
+    hip_z_diff = left_hip.z - right_hip.z
+    shoulder_x_diff = left_shoulder.x - right_shoulder.x
+    shoulder_z_diff = left_shoulder.z - right_shoulder.z
+    
+    # get sum of total differences
+    x_diff = hip_x_diff + shoulder_x_diff
+    z_diff = hip_z_diff + shoulder_z_diff
+    
+    # find higher difference for best direction estimation
+    if abs(x_diff) > abs(z_diff): # likely facing front or back
+        if x_diff > 0:
+            return "front"
+        else:
+            return "back"
+    elif abs(x_diff) < abs(z_diff):
+        if left_hip.z < right_hip.z:
+            return "right"
+        else:
+            return "left"
+    
+    # something went wrong
+    return "unknown"
 
 def calculate_angle(pose_frame: PoseFrame, joint: str) -> Optional[float]:
     """Compute the **signed** angle at a joint from a PoseFrame.
@@ -71,6 +113,8 @@ def calculate_angle(pose_frame: PoseFrame, joint: str) -> Optional[float]:
   
     if not all(0 <= lm < len(pose_frame.landmarks) for lm in landmarks):
         return None
+    
+    print(f"{joint} | {pose_frame.landmarks[base_idx].z}")
     
     # Extract 2-D coordinates (normalised 0-1)
     a = (pose_frame.landmarks[base_idx].x, pose_frame.landmarks[base_idx].y, pose_frame.landmarks[base_idx].z)

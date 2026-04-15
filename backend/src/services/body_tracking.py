@@ -17,7 +17,7 @@ from src.schemas.pose_schema import LANDMARK_NAMES, Landmark, PoseFrame
 from src.schemas.exercise_schema import EXERCISES
 from src.utils.video_utils import get_camera_source, get_video_properties
 from src.utils.drawing_utils import draw_landmarks, draw_hud
-from src.utils.tracking_calculation_utils import calculate_angle
+from src.utils.tracking_utils import calculate_angle, get_facing_direction
 
 
 class BodyTracker:
@@ -218,9 +218,10 @@ class BodyTracker:
                 # Calculate angles for both elbows
                 right_angle = calculate_angle(pose_frame, "right_elbow")
                 left_angle = calculate_angle(pose_frame, "left_elbow")
+                facing = get_facing_direction(pose_frame)
 
                 # Draw HUD
-                annotated_frame = draw_hud(annotated_frame, pose_frame, fps, right_angle, left_angle)
+                annotated_frame = draw_hud(annotated_frame, pose_frame, fps, right_angle, left_angle, facing)
 
                 # Flip (for mirror like experience) and display
                 cv2.imshow("Iris Body Tracking", annotated_frame)

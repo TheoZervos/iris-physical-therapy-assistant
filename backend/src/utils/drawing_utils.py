@@ -40,7 +40,14 @@ def draw_landmarks(frame: np.ndarray, landmarks: list[Landmark]) -> None:
             cv2.circle(frame, (x, y), 5, (0, 0, 255), -1)
             cv2.circle(frame, (x, y), 5, (255, 255, 255), 1)
                 
-def draw_hud(frame: np.ndarray, pose_frame: PoseFrame, fps: float, right_angle: float | None, left_angle: float | None) -> np.ndarray:
+def draw_hud(
+    frame: np.ndarray, 
+    pose_frame: PoseFrame, 
+    fps: float, 
+    right_angle: float | None, 
+    left_angle: float | None,
+    facing: str
+) -> np.ndarray:
     """Draw heads-up display info on the frame.
 
     Args:
@@ -57,7 +64,7 @@ def draw_hud(frame: np.ndarray, pose_frame: PoseFrame, fps: float, right_angle: 
 
     # Semi-transparent background for HUD
     overlay = frame.copy()
-    cv2.rectangle(overlay, (10, 10), (280, 185), (0, 0, 0), -1)
+    cv2.rectangle(overlay, (10, 10), (280, 195), (0, 0, 0), -1)
     cv2.addWeighted(overlay, 0.6, frame, 0.4, 0, frame)
 
     # FPS counter
@@ -105,12 +112,23 @@ def draw_hud(frame: np.ndarray, pose_frame: PoseFrame, fps: float, right_angle: 
         color,
         2,
     )
+    
+        # Confidence
+    cv2.putText(
+        frame,
+        f"Facing: {facing}",
+        (20, 155),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.6,
+        (255, 255, 255),
+        1,
+    )
 
     # Confidence
     cv2.putText(
         frame,
         f"Confidence: {pose_frame.detection_confidence:.1%}",
-        (20, 155),
+        (20, 185),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.6,
         (255, 255, 255),
