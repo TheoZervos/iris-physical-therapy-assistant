@@ -13,8 +13,8 @@ import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-
 from src.schemas.pose_schema import LANDMARK_NAMES, Landmark, PoseFrame
+from src.schemas.exercise_schema import EXERCISES
 from src.utils.video_utils import get_camera_source, get_video_properties
 from src.utils.drawing_utils import draw_landmarks, draw_hud
 from src.utils.tracking_calculation_utils import calculate_angle
@@ -128,20 +128,24 @@ class BodyTracker:
 
         return frame, pose_frame
 
-    async def process_stream(self) -> AsyncGenerator[PoseFrame, None]:
+    async def process_stream(self, exercise_string: str) -> AsyncGenerator[PoseFrame, None]:
         """Generator that yields PoseFrame objects from the live camera.
 
         Yields:
             PoseFrame for each captured frame.
         """
+        # getting exercise info
+        exercise = EXERCISES[exercise_string]
+        
         self._open_camera()
         self._start_time = time.time()
         self._frame_count = 0
-
+    
         while self._cap is not None and self._cap.isOpened():
             success, frame = self._cap.read()
             if not success:
                 print("Warning: Failed to read frame from camera.")
+                yield {"success": success}
                 continue
 
             timestamp_ms = int((time.time() - self._start_time) * 1000)
@@ -149,7 +153,25 @@ class BodyTracker:
                 timestamp_ms = 1
 
             _, pose_frame = self._process_frame(frame, timestamp_ms)
-            yield pose_frame
+            
+            # getting feedback info
+            cur_angles = {}
+            bad_angles = {}
+            for joint in exercise.joints:
+                cur_angles[joint] = calculate_angle(pose_frame, joint)
+                low_angle = exercise.joint_angle_range[joint][0]
+                high_angle = exercise.joint_angle_range[joint][1]
+                if cur_angles[joint] < low_angle:
+                    bad_angles[joint] = "low"
+                elif cur_angles[joint] > high_angle:
+                    bad_angles[joint] = "high"
+            
+            yield {
+                "cur_angles": cur_angles,
+                "bad_angles": bad_angles,
+                "elapsed_time": timestamp_ms,
+                "success": success
+            }
 
     def run_tracker_with_display(self) -> dict:
         """Run the tracker with a live display window.
