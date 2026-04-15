@@ -29,17 +29,17 @@ from src.schemas.pose_schema import PoseFrame
 # ──────────────────────────────────────────────────────────────────
 JOINT_MAP: dict[str, tuple[int, int, int, int]] = {
     # Arms
-    "Right Elbow":    (12, 14, 16, -1),  # right_shoulder → right_elbow → right_wrist
-    "Left Elbow":     (11, 13, 15, +1),  # left_shoulder  → left_elbow  → left_wrist
+    "right_elbow":    (12, 14, 16, -1),  # right_shoulder → right_elbow → right_wrist
+    "left_elbow":     (11, 13, 15, +1),  # left_shoulder  → left_elbow  → left_wrist
     # Shoulders
-    "Right Shoulder": (24, 12, 14, -1),  # right_hip → right_shoulder → right_elbow
-    "Left Shoulder":  (23, 11, 13, +1),  # left_hip  → left_shoulder  → left_elbow
+    "right_shoulder": (24, 12, 14, -1),  # right_hip → right_shoulder → right_elbow
+    "left_shoulder":  (23, 11, 13, +1),  # left_hip  → left_shoulder  → left_elbow
     # Knees
-    "Right Knee":     (24, 26, 28, -1),  # right_hip → right_knee → right_ankle
-    "Left Knee":      (23, 25, 27, +1),  # left_hip  → left_knee  → left_ankle
+    "right_knee":     (24, 26, 28, -1),  # right_hip → right_knee → right_ankle
+    "left_knee":      (23, 25, 27, +1),  # left_hip  → left_knee  → left_ankle
     # Hips
-    "Right Hip":      (12, 24, 26, -1),  # right_shoulder → right_hip → right_knee
-    "Left Hip":       (11, 23, 25, +1),  # left_shoulder  → left_hip  → left_knee
+    # "Right Hip":      (12, 24, 26, -1),  # right_shoulder → right_hip → right_knee
+    # "Left Hip":       (11, 23, 25, +1),  # left_shoulder  → left_hip  → left_knee
 }
 
 
@@ -64,8 +64,7 @@ def calculate_angle(pose_frame: PoseFrame, joint: str) -> Optional[float]:
     """
     entry = JOINT_MAP.get(joint)
     if entry is None:
-
-        return None
+      return None
 
     base_idx, vertex_idx, end_idx, side_sign = entry
     landmark_indices = (base_idx, vertex_idx, end_idx)
@@ -80,27 +79,6 @@ def calculate_angle(pose_frame: PoseFrame, joint: str) -> Optional[float]:
     c = (pose_frame.landmarks[end_idx].x, pose_frame.landmarks[end_idx].y)
 
     return side_sign * _signed_angle(a, b, c)
-
-
-def calculate_angle_from_points(
-    a: tuple[float, float],
-    b: tuple[float, float],
-    c: tuple[float, float],
-) -> float:
-    """Compute the signed angle at vertex *b* given three 2-D points.
-
-    Convenience wrapper when you already have raw (x, y) coordinates
-    rather than a full PoseFrame.
-
-    Args:
-        a: Base point (x, y).
-        b: Vertex / joint centre (x, y).
-        c: End point (x, y).
-
-    Returns:
-        Signed angle in degrees (-180, +180].
-    """
-    return _signed_angle(a, b, c)
 
 
 def normalize_angle(angle: float, base_angle: float) -> float:
@@ -129,7 +107,6 @@ def normalize_angle(angle: float, base_angle: float) -> float:
         delta += 360
     return delta
 
-
 # ──────────────────────── private helpers ────────────────────────
 
 
@@ -138,10 +115,6 @@ def _signed_angle(
     b: tuple[float, float],
     c: tuple[float, float],
 ) -> float:
-    """Return the signed angle (degrees) at vertex *b* formed by A-B-C.
-
-    Uses ``atan2(cross, dot)`` so the result is in (-180, +180].
-    """
     ba = (a[0] - b[0], a[1] - b[1])
     bc = (c[0] - b[0], c[1] - b[1])
 
