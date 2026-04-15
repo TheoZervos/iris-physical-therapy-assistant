@@ -40,13 +40,15 @@ def draw_landmarks(frame: np.ndarray, landmarks: list[Landmark]) -> None:
             cv2.circle(frame, (x, y), 5, (0, 0, 255), -1)
             cv2.circle(frame, (x, y), 5, (255, 255, 255), 1)
                 
-def draw_hud(frame: np.ndarray, pose_frame: PoseFrame, fps: float, angle: float) -> np.ndarray:
+def draw_hud(frame: np.ndarray, pose_frame: PoseFrame, fps: float, right_angle: float | None, left_angle: float | None) -> np.ndarray:
     """Draw heads-up display info on the frame.
 
     Args:
         frame: The annotated video frame.
         pose_frame: Current frame's pose data.
         fps: Current frames per second.
+        right_angle: Signed angle for the right elbow (degrees), or None.
+        left_angle: Signed angle for the left elbow (degrees), or None.
 
     Returns:
         Frame with HUD overlay.
@@ -55,7 +57,7 @@ def draw_hud(frame: np.ndarray, pose_frame: PoseFrame, fps: float, angle: float)
 
     # Semi-transparent background for HUD
     overlay = frame.copy()
-    cv2.rectangle(overlay, (10, 10), (280, 160), (0, 0, 0), -1)
+    cv2.rectangle(overlay, (10, 10), (280, 185), (0, 0, 0), -1)
     cv2.addWeighted(overlay, 0.6, frame, 0.4, 0, frame)
 
     # FPS counter
@@ -82,11 +84,22 @@ def draw_hud(frame: np.ndarray, pose_frame: PoseFrame, fps: float, angle: float)
         2,
     )
     
-    # Right Arm Angle
+    # Right Elbow Angle
     cv2.putText(
         frame,
-        f"Right Elbow: {int(angle) if angle is not None else 'N/A'}",
+        f"Right Elbow: {int(right_angle) if right_angle is not None else 'N/A'}",
         (20, 95),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.7,
+        color,
+        2,
+    )
+
+    # Left Elbow Angle
+    cv2.putText(
+        frame,
+        f"Left Elbow:  {int(left_angle) if left_angle is not None else 'N/A'}",
+        (20, 125),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.7,
         color,
@@ -97,7 +110,7 @@ def draw_hud(frame: np.ndarray, pose_frame: PoseFrame, fps: float, angle: float)
     cv2.putText(
         frame,
         f"Confidence: {pose_frame.detection_confidence:.1%}",
-        (20, 125),
+        (20, 155),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.6,
         (255, 255, 255),
