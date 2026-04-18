@@ -5,7 +5,7 @@ class Exercise(BaseModel):
     id: str = Field(description="The exercise id")
     joints: list[str] = Field(description="The joints the exercise needs to track")
     rom: dict[str, tuple[float, float]] = Field(description="The starting and ending angles of the exercise for each relevant joint (range of motion)")
-    movement_dir: dict[str, str] = Field(description="The direction the relevant body vectors for each joint should be facing to track the exercise")
+    body_vec_directions: dict[str, str] = Field(description="The direction the relevant body vectors for each joint should be facing to track the exercise")
     stretch_angles: dict[str, tuple[int, int]] = Field(description="Lower and upper bounds of the angles joints should be when stretching")
     orientation_to_camera: Literal["front", "back", "left", "right"] = Field(description="The way the user should orient with the camera")
     
@@ -17,3 +17,9 @@ class ExerciseSession(BaseModel):
     incorrect_time: float = Field(description="The amount of time spent with incorrect form")
     inactive_time: float = Field(description="The amount of time spent not exercising.")
     
+class ExerciseTrackingFrame(BaseModel):
+    facing: str = ""
+    cur_angles: dict[str, float] | None = None
+    bad_angles: dict[str, float] | None = None
+    elapsed_time: float = 0
+    success: bool
