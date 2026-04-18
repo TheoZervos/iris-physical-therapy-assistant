@@ -11,38 +11,54 @@ import math
 from typing import Optional
 
 from src.schemas.pose_schema import PoseFrame
+from src.utils.constants import JOINT_MAP, BODY_VECTORS
 
-# ──────────────────────────────────────────────────────────────────
-# Joint map:  joint_name  →  (base_idx, vertex_idx, end_idx, side_sign)
-#
-# *base*     = the reference limb endpoint (e.g. shoulder for elbow angle)
-# *vertex*   = the joint centre (e.g. elbow)
-# *end*      = the moving limb endpoint (e.g. wrist)
-# *side_sign* = +1 for left-side joints, -1 for right-side joints.
-#
-# MediaPipe landmark coordinates have x increasing to the right of the
-# *image frame*, which means the cross-product sign is geometrically
-# flipped between the left and right sides of the body.  Multiplying
-# by side_sign corrects this so that the same physical movement (e.g.
-# bending the elbow forward) produces the same signed angle on both
-# sides.
-# ──────────────────────────────────────────────────────────────────
-JOINT_MAP: dict[str, tuple[int, int, int, int]] = {
-    # Arms
-    "right_elbow":    (12, 14, 16, -1),  # right_shoulder → right_elbow → right_wrist
-    "left_elbow":     (11, 13, 15, +1),  # left_shoulder  → left_elbow  → left_wrist
-    # Shoulders
-    "right_shoulder": (24, 12, 14, -1),  # right_hip → right_shoulder → right_elbow
-    "left_shoulder":  (23, 11, 13, +1),  # left_hip  → left_shoulder  → left_elbow
-    # Knees
-    "right_knee":     (24, 26, 28, -1),  # right_hip → right_knee → right_ankle
-    "left_knee":      (23, 25, 27, +1),  # left_hip  → left_knee  → left_ankle
-    # Hips
-    # "Right Hip":      (12, 24, 26, -1),  # right_shoulder → right_hip → right_knee
-    # "Left Hip":       (11, 23, 25, +1),  # left_shoulder  → left_hip  → left_knee
-}
+# Gets the direction for a body vector
+def get_vector_direction(pose_frame: PoseFrame, body_vec: str) -> dict[str, dict[str, str | float]]:
+    entry = BODY_VECTORS[body_vec]
+    if entry is None:
+      return None
+  
+    start_idx, end_idx = entry
+    landmarks = (start_idx, end_idx)
+    
+    if not all(0 <= lm < len(pose_frame.landmarks) for lm in landmarks):
+        return None
+    
+    # Getting vectors
+    x_vec = pose_frame.landmarks[end_idx].x - pose_frame.landmarks[start_idx].x
+    y_vec = pose_frame.landmarks[end_idx].y - pose_frame.landmarks[start_idx].y
+    z_vec = pose_frame.landmarks[end_idx].z - pose_frame.landmarks[start_idx].z
+    
+    # print(f"start: {pose_frame.landmarks[end_idx].z} | end: {pose_frame.landmarks[start_idx].z}")
+    
+    # Determining most likely direction
+    directions = {"x": {}, "y": {}, "z": {}}
+    if x_vec > 0:
+        directions["x"]["direction"] = "left"
+        directions["x"]["strength"] = abs(x_vec)
+    else:
+        directions["x"]["direction"] = "right"
+        directions["x"]["strength"] = abs(x_vec)
 
-def get_facing_direction(pose_frame: PoseFrame):
+    if y_vec > 0:
+        directions["y"]["direction"] = "down"
+        directions["y"]["strength"] = abs(y_vec)
+    else:
+        directions["y"]["direction"] = "up"
+        directions["y"]["strength"] = abs(y_vec)
+        
+    if z_vec < 0:
+        directions["z"]["direction"] = "front"
+        directions["z"]["strength"] = abs(z_vec)
+    else:
+        directions["z"]["direction"] = "back"
+        directions["z"]["strength"] = abs(z_vec)
+        
+    return directions
+    
+
+def get_facing_direction(pose_frame: PoseFrame) -> str:
     """Determine the direction that the user is facing
 
     Args:
@@ -70,13 +86,16 @@ def get_facing_direction(pose_frame: PoseFrame):
     x_diff = hip_x_diff + shoulder_x_diff
     z_diff = hip_z_diff + shoulder_z_diff
     
+    # print(f"right: {right_shoulder.x}")
+    # print(f"left: {left_shoulder.x}")
+    
     # find higher difference for best direction estimation
     if abs(x_diff) > abs(z_diff): # likely facing front or back
         if x_diff > 0:
             return "front"
         else:
             return "back"
-    elif abs(x_diff) < abs(z_diff):
+    elif abs(x_diff) < abs(z_diff): # likely facing left or right
         if left_hip.z < right_hip.z:
             return "right"
         else:
@@ -113,8 +132,6 @@ def calculate_angle(pose_frame: PoseFrame, joint: str) -> Optional[float]:
   
     if not all(0 <= lm < len(pose_frame.landmarks) for lm in landmarks):
         return None
-    
-    print(f"{joint} | {pose_frame.landmarks[base_idx].z}")
     
     # Extract 2-D coordinates (normalised 0-1)
     a = (pose_frame.landmarks[base_idx].x, pose_frame.landmarks[base_idx].y, pose_frame.landmarks[base_idx].z)

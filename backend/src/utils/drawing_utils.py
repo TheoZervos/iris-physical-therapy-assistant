@@ -1,15 +1,7 @@
 import cv2
 import numpy as np
 from src.schemas.pose_schema import Landmark, PoseFrame
-
-# Connections between the 33 MediaPipe pose landmarks for drawing the skeleton
-POSE_CONNECTIONS = [
-    (15, 21), (16, 22), (15, 17), (16, 18), (15, 19), (16, 20), (17, 19), (18, 20),
-    (11, 13), (12, 14), (13, 15), (14, 16), (11, 12), (11, 23), (12, 24), (23, 24),
-    (23, 25), (24, 26), (25, 27), (26, 28), (27, 29), (28, 30), (29, 31), (30, 32),
-    (27, 31), (28, 32), (0, 1), (0, 4), (1, 2), (4, 5), (2, 3), (5, 6), (3, 7),
-    (6, 8), (9, 10)
-]
+from src.utils.constants import POSE_CONNECTIONS
 
 def draw_landmarks(frame: np.ndarray, landmarks: list[Landmark]) -> None:
     """Draw pose landmarks and connections manually using OpenCV.
@@ -94,7 +86,7 @@ def draw_hud(
     # Right Elbow Angle
     cv2.putText(
         frame,
-        f"Right Elbow: {int(right_angle) if right_angle is not None else 'N/A'}",
+        f"Right Shoulder: {int(right_angle) if right_angle is not None else 'N/A'}",
         (20, 95),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.7,
@@ -105,7 +97,7 @@ def draw_hud(
     # Left Elbow Angle
     cv2.putText(
         frame,
-        f"Left Elbow:  {int(left_angle) if left_angle is not None else 'N/A'}",
+        f"Right Elbow:  {int(left_angle) if left_angle is not None else 'N/A'}",
         (20, 125),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.7,

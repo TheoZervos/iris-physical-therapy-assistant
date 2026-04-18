@@ -5,7 +5,6 @@ pose estimation, detecting 33 body landmarks per frame.
 """
 import time
 from typing import AsyncGenerator
-from pathlib import Path
 
 import cv2
 import mediapipe as mp
@@ -13,11 +12,11 @@ import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-from src.schemas.pose_schema import LANDMARK_NAMES, Landmark, PoseFrame
-from src.schemas.exercise_schema import EXERCISES
+from src.utils.constants import LANDMARK_NAMES, EXERCISES
+from src.schemas.pose_schema import Landmark, PoseFrame
 from src.utils.video_utils import get_camera_source, get_video_properties
 from src.utils.drawing_utils import draw_landmarks, draw_hud
-from src.utils.tracking_utils import calculate_angle, get_facing_direction
+from src.utils.tracking_utils import calculate_angle, get_facing_direction, get_vector_direction
 
 
 class BodyTracker:
@@ -30,8 +29,8 @@ class BodyTracker:
     def __init__(
         self,
         camera_index: int = 0,
-        min_detection_confidence: float = 0.5,
-        min_tracking_confidence: float = 0.5,
+        min_detection_confidence: float = 0.8,
+        min_tracking_confidence: float = 0.8,
         model_complexity: int = 1,
     ) -> None:
         """Initialize the body tracker.
@@ -216,10 +215,13 @@ class BodyTracker:
                 self._fps_history.append(fps)
 
                 # Calculate angles for both elbows
-                right_angle = calculate_angle(pose_frame, "right_elbow")
-                left_angle = calculate_angle(pose_frame, "left_elbow")
+                right_angle = calculate_angle(pose_frame, "right_shoulder")
+                left_angle = calculate_angle(pose_frame, "right_elbow")
                 facing = get_facing_direction(pose_frame)
-
+                
+                forearm_direction = get_vector_direction(pose_frame, "right_forearm_vec")
+                print(forearm_direction)
+                
                 # Draw HUD
                 annotated_frame = draw_hud(annotated_frame, pose_frame, fps, right_angle, left_angle, facing)
 
