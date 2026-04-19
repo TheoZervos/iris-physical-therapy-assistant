@@ -5,6 +5,7 @@ Launches the live body pose tracking system using the device camera.
 
 import argparse
 import sys
+import asyncio
 
 from src.services.body_tracking import BodyTracker
 
@@ -39,27 +40,46 @@ def main() -> None:
         default=1,
         help="Model complexity: 0=lite, 1=full, 2=heavy (default: 1)",
     )
+    parser.add_argument(
+        "--exercise-id",
+        type=str,
+        default="",
+        help="The exercise to track"
+    )
 
     args = parser.parse_args()
+    
+    if args.exercise_id != "":
+        try:
+            tracker = BodyTracker(
+                camera_index=args.source,
+                min_detection_confidence=args.detection_confidence,
+                min_tracking_confidence=args.tracking_confidence,
+                model_complexity=args.model_complexity,
+            )
+            asyncio.run(tracker.run_exercise_tracker_with_display(args.exercise_id))
+        except RuntimeError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        try:
+            tracker = BodyTracker(
+                camera_index=args.source,
+                min_detection_confidence=args.detection_confidence,
+                min_tracking_confidence=args.tracking_confidence,
+                model_complexity=args.model_complexity,
+            )
+            summary = tracker.run_tracker_with_display()
 
-    try:
-        tracker = BodyTracker(
-            camera_index=args.source,
-            min_detection_confidence=args.detection_confidence,
-            min_tracking_confidence=args.tracking_confidence,
-            model_complexity=args.model_complexity,
-        )
-        summary = tracker.run_with_display()
+            print("\n--- Session Summary ---")
+            print(f"  Total Frames:  {summary['total_frames']}")
+            print(f"  Duration:      {summary['duration_seconds']}s")
+            print(f"  Average FPS:   {summary['avg_fps']}")
+            print("----------------------\n")
 
-        print("\n--- Session Summary ---")
-        print(f"  Total Frames:  {summary['total_frames']}")
-        print(f"  Duration:      {summary['duration_seconds']}s")
-        print(f"  Average FPS:   {summary['avg_fps']}")
-        print("----------------------\n")
-
-    except RuntimeError as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
+        except RuntimeError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            sys.exit(1)
 
 
 if __name__ == "__main__":

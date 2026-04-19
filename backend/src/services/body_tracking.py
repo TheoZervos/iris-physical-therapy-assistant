@@ -3,10 +3,9 @@
 Captures live video from the device camera and runs real-time
 pose estimation, detecting 33 body landmarks per frame.
 """
-
+import json
 import time
-from collections.abc import Generator
-from pathlib import Path
+from typing import AsyncGenerator, Any
 
 import cv2
 import mediapipe as mp
@@ -14,18 +13,19 @@ import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-from src.schemas.pose_schema import LANDMARK_NAMES, Landmark, PoseFrame
+from src.utils.constants import LANDMARK_NAMES, EXERCISES
+from src.schemas.pose_schema import Landmark, PoseFrame
+from src.schemas.exercise_schema import ExerciseTrackingFrame
 from src.utils.video_utils import get_camera_source, get_video_properties
-
-
-# Connections between the 33 MediaPipe pose landmarks for drawing the skeleton
-POSE_CONNECTIONS = [
-    (15, 21), (16, 22), (15, 17), (16, 18), (15, 19), (16, 20), (17, 19), (18, 20),
-    (11, 13), (12, 14), (13, 15), (14, 16), (11, 12), (11, 23), (12, 24), (23, 24),
-    (23, 25), (24, 26), (25, 27), (26, 28), (27, 29), (28, 30), (29, 31), (30, 32),
-    (27, 31), (28, 32), (0, 1), (0, 4), (1, 2), (4, 5), (2, 3), (5, 6), (3, 7),
-    (6, 8), (9, 10)
-]
+from src.utils.drawing_utils import draw_landmarks, draw_hud, draw_exercise_tracking_hud
+from src.utils.tracking_calculation_utils import calculate_angle
+from src.utils.tracking_utils import (
+    get_corrections,
+    get_facing_direction,
+    get_vector_direction,
+    get_vector_directions
+)
+from src.utils.tracking_utils import get_body_position, get_joint_angles
 
 
 class BodyTracker:
@@ -38,8 +38,8 @@ class BodyTracker:
     def __init__(
         self,
         camera_index: int = 0,
-        min_detection_confidence: float = 0.5,
-        min_tracking_confidence: float = 0.5,
+        min_detection_confidence: float = 0.8,
+        min_tracking_confidence: float = 0.8,
         model_complexity: int = 1,
     ) -> None:
         """Initialize the body tracker.
@@ -54,14 +54,7 @@ class BodyTracker:
         
         # Determine model path based on complexity
         model_type = "lite" if model_complexity == 0 else "full"
-        # Heavy model not downloaded by default to save space, fallback to full if 2 is passed
-        if model_complexity == 2 and not Path(f"../models/pose_landmarker_heavy.task").exists():
-            model_type = "full"
-            print("Heavy model not found, falling back to full model.")
-
-        model_path = Path(__file__).parent.parent.parent.parent / "models" / f"pose_landmarker_{model_type}.task"
-        if not model_path.exists():
-            raise FileNotFoundError(f"Pose landmarker model not found at {model_path}. Please download it.")
+        model_path = f"../models/pose_landmarker_{model_type}.task"
 
         # Initialize MediaPipe PoseLandmarker
         base_options = python.BaseOptions(model_asset_path=str(model_path))
@@ -91,34 +84,6 @@ class BodyTracker:
             print(f"Camera opened: {props['width']}x{props['height']} @ {props['fps']:.0f} FPS")
             print(f"Backend: {props['backend']}")
 
-    def _draw_landmarks(self, frame: np.ndarray, landmarks: list[Landmark]) -> None:
-        """Draw pose landmarks and connections manually using OpenCV.
-
-        Args:
-            frame: the OpenCV BGR image frame.
-            landmarks: list of Landmark Pydantic models.
-        """
-        h, w = frame.shape[:2]
-        
-        # Draw connections
-        for connection in POSE_CONNECTIONS:
-            start_idx, end_idx = connection
-            if start_idx < len(landmarks) and end_idx < len(landmarks):
-                lm1 = landmarks[start_idx]
-                lm2 = landmarks[end_idx]
-                
-                # Only draw if both points are reasonably visible
-                if lm1.visibility > 0.5 and lm2.visibility > 0.5:
-                    x1, y1 = int(lm1.x * w), int(lm1.y * h)
-                    x2, y2 = int(lm2.x * w), int(lm2.y * h)
-                    cv2.line(frame, (x1, y1), (x2, y2), (255, 255, 255), 2)
-
-        # Draw joints
-        for lm in landmarks:
-            if lm.visibility > 0.5:
-                x, y = int(lm.x * w), int(lm.y * h)
-                cv2.circle(frame, (x, y), 5, (0, 0, 255), -1)
-                cv2.circle(frame, (x, y), 5, (255, 255, 255), 1)
 
     def _process_frame(self, frame: np.ndarray, timestamp_ms: int) -> tuple[np.ndarray, PoseFrame]:
         """Run pose detection on a single frame.
@@ -163,9 +128,6 @@ class BodyTracker:
             if landmarks:
                 detection_confidence = sum(lm.visibility for lm in landmarks) / len(landmarks)
 
-            # Draw the skeleton overlay manually
-            self._draw_landmarks(frame, landmarks)
-
         pose_frame = PoseFrame(
             frame_number=self._frame_count,
             timestamp_ms=float(timestamp_ms),
@@ -175,96 +137,77 @@ class BodyTracker:
 
         return frame, pose_frame
 
-    def _draw_hud(self, frame: np.ndarray, pose_frame: PoseFrame, fps: float) -> np.ndarray:
-        """Draw heads-up display info on the frame.
-
-        Args:
-            frame: The annotated video frame.
-            pose_frame: Current frame's pose data.
-            fps: Current frames per second.
-
-        Returns:
-            Frame with HUD overlay.
-        """
-        h, w = frame.shape[:2]
-
-        # Semi-transparent background for HUD
-        overlay = frame.copy()
-        cv2.rectangle(overlay, (10, 10), (280, 110), (0, 0, 0), -1)
-        cv2.addWeighted(overlay, 0.6, frame, 0.4, 0, frame)
-
-        # FPS counter
-        cv2.putText(
-            frame,
-            f"FPS: {fps:.1f}",
-            (20, 35),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.7,
-            (0, 255, 0),
-            2,
-        )
-
-        # Landmark count
-        status = "TRACKING" if pose_frame.has_pose else "NO POSE"
-        color = (0, 255, 0) if pose_frame.has_pose else (0, 0, 255)
-        cv2.putText(
-            frame,
-            f"Status: {status}",
-            (20, 65),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.7,
-            color,
-            2,
-        )
-
-        # Confidence
-        cv2.putText(
-            frame,
-            f"Confidence: {pose_frame.detection_confidence:.1%}",
-            (20, 95),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.6,
-            (255, 255, 255),
-            1,
-        )
-
-        # Instruction at bottom
-        cv2.putText(
-            frame,
-            "Press 'q' to quit",
-            (w // 2 - 90, h - 20),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.6,
-            (200, 200, 200),
-            1,
-        )
-
-        return frame
-
-    def process_stream(self) -> Generator[PoseFrame, None, None]:
+    async def process_exercise_stream(self, exercise_string: str) -> AsyncGenerator[ExerciseTrackingFrame, None]:
         """Generator that yields PoseFrame objects from the live camera.
 
         Yields:
             PoseFrame for each captured frame.
         """
+        # setting up tracker
+        exercise = EXERCISES[exercise_string]
         self._open_camera()
         self._start_time = time.time()
-        self._frame_count = 0
-
+    
         while self._cap is not None and self._cap.isOpened():
             success, frame = self._cap.read()
+            success_frame = ExerciseTrackingFrame(cv_success=success)
             if not success:
                 print("Warning: Failed to read frame from camera.")
+                yield success_frame
                 continue
 
             timestamp_ms = int((time.time() - self._start_time) * 1000)
             if timestamp_ms <= 0:
                 timestamp_ms = 1
                 
-            _, pose_frame = self._process_frame(frame, timestamp_ms)
-            yield pose_frame
-
-    def run_with_display(self) -> dict:
+            # processing frame
+            annotated_frame, pose_frame = self._process_frame(frame, timestamp_ms)
+            
+            # checking that user's body is oriented to be tracked
+            tracking_frame = get_body_position(pose_frame, exercise)
+            tracking_frame.pose_frame = pose_frame
+            tracking_frame.annotated_frame = annotated_frame
+            if not tracking_frame.in_position:
+                yield tracking_frame
+                continue
+            
+            # checking if user has good form
+            cur_angles, bad_angles = get_joint_angles(pose_frame, exercise)
+            tracking_frame.cur_angles = cur_angles
+            tracking_frame.bad_angles = bad_angles
+            if bad_angles:
+                corrections = get_corrections(bad_angles, exercise.stretch_angles[tracking_frame.cur_side])
+                tracking_frame.corrections.extend(corrections)
+                
+            # adding elapsed time
+            tracking_frame.elapsed_time = float(timestamp_ms)/1000.0
+            
+            yield tracking_frame
+     
+    # Run tracker to track exercise with display       
+    async def run_exercise_tracker_with_display(self, exercise_string: str):
+        # handling all frames
+        async for tracking_frame in self.process_exercise_stream(exercise_string):
+            if not tracking_frame.cv_success:
+                continue
+            
+            pose_frame = tracking_frame.pose_frame
+            annotated_frame = tracking_frame.get_annotated_frame()
+            # print("right_elbow", calculate_angle(pose_frame, "right_elbow"))
+            # print("right_forearm", get_vector_direction(pose_frame, "right_forearm"))
+            # print("left_elbow", calculate_angle(pose_frame, "left_elbow"))
+            
+            draw_landmarks(annotated_frame, pose_frame.landmarks)
+            annotated_frame = cv2.flip(annotated_frame, 1)
+            
+            display_frame = draw_exercise_tracking_hud(exercise_string, tracking_frame, annotated_frame, pose_frame)
+            cv2.imshow(f"Tracking {exercise_string}", display_frame)
+            
+            # Quit on 'q'
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+            
+    def run_tracker_with_display(self) -> dict:
         """Run the tracker with a live display window.
 
         Opens an OpenCV window showing the camera feed with skeleton
@@ -289,16 +232,16 @@ class BodyTracker:
                 if not success:
                     continue
 
-                # Flip horizontally for a mirror-like experience
-                frame = cv2.flip(frame, 1)
-
                 # Process the frame
                 current_time_ms = time.time() * 1000
                 timestamp_ms = int(current_time_ms - start_time_ms)
                 if timestamp_ms <= 0:
                     timestamp_ms = 1  # MediaPipe timestamp strictly positive and increasing
-                
+                    
+                # Add landmarks (flip for mirror)
                 annotated_frame, pose_frame = self._process_frame(frame, timestamp_ms)
+                draw_landmarks(annotated_frame, pose_frame.landmarks)
+                annotated_frame = cv2.flip(annotated_frame, 1)
 
                 # Calculate FPS
                 current_time = time.time()
@@ -306,10 +249,16 @@ class BodyTracker:
                 prev_time = current_time
                 self._fps_history.append(fps)
 
+                # Calculate angles for both elbows
+                right_angle = calculate_angle(pose_frame, "right_shoulder")
+                left_angle = calculate_angle(pose_frame, "right_elbow")
+                facing = get_facing_direction(pose_frame)
+                
+                forearm_direction = get_vector_direction(pose_frame, "right_forearm")
+                print(forearm_direction)
+                
                 # Draw HUD
-                annotated_frame = self._draw_hud(annotated_frame, pose_frame, fps)
-
-                # Display
+                annotated_frame = draw_hud(annotated_frame, pose_frame, fps, right_angle, left_angle, facing)
                 cv2.imshow("Iris Body Tracking", annotated_frame)
 
                 # Quit on 'q'
