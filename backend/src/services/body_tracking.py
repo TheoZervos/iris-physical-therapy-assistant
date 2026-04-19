@@ -19,7 +19,12 @@ from src.schemas.exercise_schema import ExerciseTrackingFrame
 from src.utils.video_utils import get_camera_source, get_video_properties
 from src.utils.drawing_utils import draw_landmarks, draw_hud, draw_exercise_tracking_hud
 from src.utils.tracking_calculation_utils import calculate_angle
-from src.utils.tracking_utils import get_corrections, get_facing_direction, get_vector_direction
+from src.utils.tracking_utils import (
+    get_corrections,
+    get_facing_direction,
+    get_vector_direction,
+    get_vector_directions
+)
 from src.utils.tracking_utils import get_body_position, get_joint_angles
 
 
@@ -171,7 +176,7 @@ class BodyTracker:
             tracking_frame.cur_angles = cur_angles
             tracking_frame.bad_angles = bad_angles
             if bad_angles:
-                corrections = get_corrections(bad_angles, exercise.stretch_angles)
+                corrections = get_corrections(bad_angles, exercise.stretch_angles[tracking_frame.cur_side])
                 tracking_frame.corrections.extend(corrections)
                 
             # adding elapsed time
@@ -188,8 +193,9 @@ class BodyTracker:
             
             pose_frame = tracking_frame.pose_frame
             annotated_frame = tracking_frame.get_annotated_frame()
-            print("right_elbow", calculate_angle(pose_frame, "right_elbow"))
-            print("left_elbow", calculate_angle(pose_frame, "left_elbow"))
+            # print("right_elbow", calculate_angle(pose_frame, "right_elbow"))
+            # print("right_forearm", get_vector_direction(pose_frame, "right_forearm"))
+            # print("left_elbow", calculate_angle(pose_frame, "left_elbow"))
             
             draw_landmarks(annotated_frame, pose_frame.landmarks)
             annotated_frame = cv2.flip(annotated_frame, 1)
@@ -248,7 +254,7 @@ class BodyTracker:
                 left_angle = calculate_angle(pose_frame, "right_elbow")
                 facing = get_facing_direction(pose_frame)
                 
-                forearm_direction = get_vector_direction(pose_frame, "right_forearm_vec")
+                forearm_direction = get_vector_direction(pose_frame, "right_forearm")
                 print(forearm_direction)
                 
                 # Draw HUD
