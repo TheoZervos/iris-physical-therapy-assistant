@@ -12,12 +12,13 @@ Run with::
 
 import asyncio
 import json
+from typing import Optional
 
 from fastapi import FastAPI, Query
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
-from src.services.dummy_data import DummyDataGenerator
+from src.schemas.exercise_schema import ExerciseTrackingFrame
+from src.services.body_tracking import BodyTracker
 
 # ── App setup ───────────────────────────────────────────────────
 
@@ -27,49 +28,18 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# Allow the Flutter web frontend (and any local dev origins) to connect
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # tighten in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # ── Routes ──────────────────────────────────────────────────────
-
-
 @app.get("/", tags=["health"])
 async def health_check():
     """Basic liveness probe."""
     return {"status": "ok", "service": "iris-backend"}
 
-
-@app.get("/api/tracking/snapshot", tags=["tracking"])
-async def tracking_snapshot():
-    """Return a single ``TrackingFrame`` (useful for polling).
-
-    Always uses dummy data for now; will switch to the live
-    ``BodyTracker`` pipeline once the CV model is integrated.
-    """
-    gen = DummyDataGenerator()
-    frame = gen.next_frame()
-    return frame.model_dump()
-
-
-@app.get("/api/tracking/stream", tags=["tracking"])
-async def tracking_stream(
-    source: str = Query(
-        default="dummy",
-        description="Data source: 'dummy' for simulated data, 'live' for camera feed",
-        pattern="^(dummy|live)$",
-    ),
-    fps: float = Query(
-        default=30.0,
-        description="Target frames per second for the stream",
-        gt=0,
-        le=120,
-    ),
+@app.get("/track_exercise", tags=["tracking"])
+async def track_exercise(
+    exercise_id: str,
+    camera_index: Optional[int] = 1,
+    min_detection_conf: Optional[float] = 0.8,
+    min_tracking_conf: Optional[float] = 0.8,
 ):
     """Stream ``TrackingFrame`` objects as Server-Sent Events (SSE).
 
@@ -80,26 +50,14 @@ async def tracking_stream(
         source: ``dummy`` (default) or ``live``.
         fps: Target frame rate for the stream (default 30).
     """
-
-    async def _event_generator():
-        if source == "live":
-            # TODO: wire up BodyTracker.process_stream() here once
-            #       the camera pipeline is ready for headless use.
-            #       For now, fall back to dummy data.
-            gen = DummyDataGenerator(fps=fps)
-        else:
-            gen = DummyDataGenerator(fps=fps)
-
-        interval = 1.0 / fps
-
-        while True:
-            frame = gen.next_frame()
-            payload = json.dumps(frame.model_dump())
-            yield f"data: {payload}\n\n"
-            await asyncio.sleep(interval)
+    tracker = BodyTracker(
+        camera_index=camera_index,
+        min_detection_confidence=min_detection_conf,
+        min_tracking_confidence=min_tracking_conf
+    )
 
     return StreamingResponse(
-        _event_generator(),
+        tracker.process_exercise_stream(exercise_id),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
