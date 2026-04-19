@@ -176,7 +176,7 @@ def get_body_position(pose_frame: PoseFrame, exercise: Exercise) -> ExerciseTrac
                 break
         
         # getting side of body user is exercising    
-        cur_side = _get_cur_side(pose_frame, facing)
+        cur_side = _get_cur_side(pose_frame, facing, exercise)
             
         # checking that user is in rom to start exercise
         in_rom = True
@@ -186,10 +186,10 @@ def get_body_position(pose_frame: PoseFrame, exercise: Exercise) -> ExerciseTrac
                 if not in_rom:
                     break
         
-        corrections = ExerciseCorrection(
+        corrections = [ExerciseCorrection(
             message="not_in_position",
             severity="info"
-        ) if not in_position or not in_rom else []
+        )] if not in_position or not in_rom else []
         
         return ExerciseTrackingFrame(
             facing=facing,
