@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from src.utils.tracking_utils import get_vector_directions
 from src.schemas.exercise_schema import Exercise, ExerciseTrackingFrame
 from src.schemas.pose_schema import Landmark, PoseFrame
 from src.utils.constants import POSE_CONNECTIONS
@@ -147,6 +148,7 @@ def draw_exercise_tracking_hud(
     annotated_frame: np.ndarray, 
     pose_frame: PoseFrame, 
 ) -> np.ndarray:
+    
     # Semi-transparent background for HUD
     overlay = annotated_frame.copy()
     cv2.rectangle(overlay, (10, 10), (280, 195), (0, 0, 0), -1)
@@ -159,7 +161,7 @@ def draw_exercise_tracking_hud(
     cv2.putText(
         annotated_frame,
         f"Status: {status}",
-        (20, 65),
+        (20, 35),
         font,
         0.7,
         color,
@@ -170,7 +172,7 @@ def draw_exercise_tracking_hud(
     cv2.putText(
         annotated_frame,
         f"Exercise: {exercise}",
-        (20, 95),
+        (20, 65),
         font,
         0.7,
         color,
@@ -183,7 +185,7 @@ def draw_exercise_tracking_hud(
         cv2.putText(
             annotated_frame,
             correction.message,
-            (20, 125+spacing),
+            (20, 95+spacing),
             font,
             0.7,
             color,
