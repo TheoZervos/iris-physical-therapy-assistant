@@ -3,8 +3,9 @@
 Captures live video from the device camera and runs real-time
 pose estimation, detecting 33 body landmarks per frame.
 """
+import json
 import time
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Any
 
 import cv2
 import mediapipe as mp
@@ -14,9 +15,12 @@ from mediapipe.tasks.python import vision
 
 from src.utils.constants import LANDMARK_NAMES, EXERCISES
 from src.schemas.pose_schema import Landmark, PoseFrame
+from src.schemas.exercise_schema import ExerciseTrackingFrame
 from src.utils.video_utils import get_camera_source, get_video_properties
-from src.utils.drawing_utils import draw_landmarks, draw_hud
-from src.utils.tracking_utils import calculate_angle, get_facing_direction, get_vector_direction
+from src.utils.drawing_utils import draw_landmarks, draw_hud, draw_exercise_tracking_hud
+from src.utils.tracking_calculation_utils import calculate_angle
+from src.utils.tracking_utils import get_corrections, get_facing_direction, get_vector_direction
+from src.utils.tracking_utils import get_body_position, get_joint_angles
 
 
 class BodyTracker:
@@ -75,6 +79,7 @@ class BodyTracker:
             print(f"Camera opened: {props['width']}x{props['height']} @ {props['fps']:.0f} FPS")
             print(f"Backend: {props['backend']}")
 
+
     def _process_frame(self, frame: np.ndarray, timestamp_ms: int) -> tuple[np.ndarray, PoseFrame]:
         """Run pose detection on a single frame.
 
@@ -127,51 +132,73 @@ class BodyTracker:
 
         return frame, pose_frame
 
-    async def process_stream(self, exercise_string: str) -> AsyncGenerator[PoseFrame, None]:
+    async def process_exercise_stream(self, exercise_string: str) -> AsyncGenerator[ExerciseTrackingFrame, None]:
         """Generator that yields PoseFrame objects from the live camera.
 
         Yields:
             PoseFrame for each captured frame.
         """
-        # getting exercise info
+        # setting up tracker
         exercise = EXERCISES[exercise_string]
-        
         self._open_camera()
         self._start_time = time.time()
-        self._frame_count = 0
     
         while self._cap is not None and self._cap.isOpened():
             success, frame = self._cap.read()
+            success_frame = ExerciseTrackingFrame(cv_success=success)
             if not success:
                 print("Warning: Failed to read frame from camera.")
-                yield {"success": success}
+                yield success_frame
                 continue
 
             timestamp_ms = int((time.time() - self._start_time) * 1000)
             if timestamp_ms <= 0:
                 timestamp_ms = 1
-
-            _, pose_frame = self._process_frame(frame, timestamp_ms)
+                
+            # processing frame
+            annotated_frame, pose_frame = self._process_frame(frame, timestamp_ms)
             
-            # getting feedback info
-            cur_angles = {}
-            bad_angles = {}
-            for joint in exercise.joints:
-                cur_angles[joint] = calculate_angle(pose_frame, joint)
-                low_angle = exercise.joint_angle_range[joint][0]
-                high_angle = exercise.joint_angle_range[joint][1]
-                if cur_angles[joint] < low_angle:
-                    bad_angles[joint] = "low"
-                elif cur_angles[joint] > high_angle:
-                    bad_angles[joint] = "high"
+            # checking that user's body is oriented to be tracked
+            tracking_frame = get_body_position(pose_frame, exercise)
+            tracking_frame.pose_frame = pose_frame
+            tracking_frame.annotated_frame = annotated_frame
+            if not tracking_frame.in_position:
+                yield tracking_frame
+                continue
             
-            yield {
-                "cur_angles": cur_angles,
-                "bad_angles": bad_angles,
-                "elapsed_time": timestamp_ms,
-                "success": success
-            }
-
+            # checking if user has good form
+            cur_angles, bad_angles = get_joint_angles(pose_frame, exercise)
+            tracking_frame.cur_angles = cur_angles
+            tracking_frame.bad_angles = bad_angles
+            if bad_angles:
+                corrections = get_corrections(bad_angles, exercise.stretch_angles)
+                tracking_frame.corrections.extend(corrections)
+                
+            # adding elapsed time
+            tracking_frame.elapsed_time = float(timestamp_ms)/1000.0
+            
+            yield tracking_frame
+     
+    # Run tracker to track exercise with display       
+    async def run_exercise_tracker_with_display(self, exercise_string: str):
+        # handling all frames
+        async for tracking_frame in self.process_exercise_stream(exercise_string):
+            if not tracking_frame.cv_success:
+                continue
+            
+            pose_frame = tracking_frame.pose_frame
+            annotated_frame = tracking_frame.get_annotated_frame()
+            
+            draw_landmarks(annotated_frame, pose_frame.landmarks)
+            annotated_frame = cv2.flip(annotated_frame, 1)
+            
+            display_frame = draw_exercise_tracking_hud(exercise_string, tracking_frame, annotated_frame, pose_frame)
+            cv2.imshow(f"Tracking {exercise_string}", display_frame)
+            
+            # Quit on 'q'
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+            
     def run_tracker_with_display(self) -> dict:
         """Run the tracker with a live display window.
 
@@ -224,8 +251,6 @@ class BodyTracker:
                 
                 # Draw HUD
                 annotated_frame = draw_hud(annotated_frame, pose_frame, fps, right_angle, left_angle, facing)
-
-                # Flip (for mirror like experience) and display
                 cv2.imshow("Iris Body Tracking", annotated_frame)
 
                 # Quit on 'q'

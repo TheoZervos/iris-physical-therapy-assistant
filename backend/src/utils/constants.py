@@ -1,4 +1,4 @@
-from src.schemas.exercise_schema import Exercise
+from src.schemas.exercise_schema import Exercise, RangeOfMotion
 
 # Mapping of MediaPipe's 33 pose landmark indices to human-readable names
 LANDMARK_NAMES: dict[int, str] = {
@@ -70,15 +70,15 @@ JOINT_MAP: dict[str, tuple[int, int, int, int]] = {
 # Vectors formed by parts of the body between joints
 BODY_VECTORS: dict[str, tuple[int, int]] = {
     # Arms
-    "right_forearm_vec": (14, 16),
-    "left_forearm_vec": (13, 15),
-    "right_bicep_vec": (12, 14),
-    "left_bicep_vec": (11, 13),
+    "right_forearm": (14, 16),
+    "left_forearm": (13, 15),
+    "right_bicep": (12, 14),
+    "left_bicep": (11, 13),
     # Legs
-    "right_quad_vec": (24, 26),
-    "left_quad_vec": (23, 25),
-    "right_calf_vec": (26, 28),
-    "left_calf_vec": (25, 27)
+    "right_quad": (24, 26),
+    "left_quad": (23, 25),
+    "right_calf": (26, 28),
+    "left_calf": (25, 27)
 }
 
 # Connections between the 33 MediaPipe pose landmarks for drawing the skeleton
@@ -95,15 +95,18 @@ EXERCISES: dict[str, Exercise] = {
     "CAS1": Exercise(
         id="CAS1", 
         joints=["elbow", "shoulder"],
-        rom={},
-        movement_dir={
-            "right_elbow": "left",
-            "left_elbow": "right",
+        total_rom={},
+        body_vec_directions={
+            "left": {"left_forearm": "right"},
+            "right": {"right_forearm": "left"}
         },
         stretch_angles={
-            "elbow": (75, 100),
-            "shoulder": (0, 0)
+            "right": {
+                "right_elbow": RangeOfMotion(low_angle=75, high_angle=100),
+                "right_shoulder": RangeOfMotion(low_angle=0, high_angle=0)
+            },
+            "left": {}
         },
-        orientation_to_camera="facing"
+        facing_dir="front"
     )
 }

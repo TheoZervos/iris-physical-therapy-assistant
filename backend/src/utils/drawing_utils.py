@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from src.schemas.exercise_schema import Exercise, ExerciseTrackingFrame
 from src.schemas.pose_schema import Landmark, PoseFrame
 from src.utils.constants import POSE_CONNECTIONS
 
@@ -105,7 +106,7 @@ def draw_hud(
         2,
     )
     
-        # Confidence
+    # Facing
     cv2.putText(
         frame,
         f"Facing: {facing}",
@@ -139,3 +140,54 @@ def draw_hud(
     )
 
     return frame
+
+def draw_exercise_tracking_hud(
+    exercise: str,
+    tracking_frame: ExerciseTrackingFrame,
+    annotated_frame: np.ndarray, 
+    pose_frame: PoseFrame, 
+) -> np.ndarray:
+    # Semi-transparent background for HUD
+    overlay = annotated_frame.copy()
+    cv2.rectangle(overlay, (10, 10), (280, 195), (0, 0, 0), -1)
+    cv2.addWeighted(overlay, 0.6, annotated_frame, 0.4, 0, annotated_frame)
+    
+    # Landmark count
+    status = "TRACKING" if pose_frame.has_pose else "NO POSE"
+    color = (0, 255, 0) if pose_frame.has_pose else (0, 0, 255)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    cv2.putText(
+        annotated_frame,
+        f"Status: {status}",
+        (20, 65),
+        font,
+        0.7,
+        color,
+        2,
+    )
+    
+    # Exercise being tracked
+    cv2.putText(
+        annotated_frame,
+        f"Exercise: {exercise}",
+        (20, 95),
+        font,
+        0.7,
+        color,
+        2
+    )
+    
+    # Corrections to apply
+    spacing = 0
+    for correction in tracking_frame.corrections:
+        cv2.putText(
+            annotated_frame,
+            correction.message,
+            (20, 125+spacing),
+            font,
+            0.7,
+            color,
+            2
+        )
+        
+    return annotated_frame
