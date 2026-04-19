@@ -188,6 +188,8 @@ class BodyTracker:
             
             pose_frame = tracking_frame.pose_frame
             annotated_frame = tracking_frame.get_annotated_frame()
+            print("right_elbow", calculate_angle(pose_frame, "right_elbow"))
+            print("left_elbow", calculate_angle(pose_frame, "left_elbow"))
             
             draw_landmarks(annotated_frame, pose_frame.landmarks)
             annotated_frame = cv2.flip(annotated_frame, 1)
