@@ -57,8 +57,8 @@ JOINT_MAP: dict[str, tuple[int, int, int, int]] = {
     "right_elbow":    (12, 14, 16, -1),  # right_shoulder → right_elbow → right_wrist
     "left_elbow":     (11, 13, 15, +1),  # left_shoulder  → left_elbow  → left_wrist
     # Shoulders
-    "right_shoulder": (24, 12, 14, -1),  # right_hip → right_shoulder → right_elbow
-    "left_shoulder":  (23, 11, 13, +1),  # left_hip  → left_shoulder  → left_elbow
+    "right_shoulder": (11, 12, 14, -1),  # left_shoulder → right_shoulder → right_elbow
+    "left_shoulder":  (12, 11, 13, +1),  # right_shoulder  → left_shoulder  → left_elbow
     # Knees
     "right_knee":     (24, 26, 28, -1),  # right_hip → right_knee → right_ankle
     "left_knee":      (23, 25, 27, +1),  # left_hip  → left_knee  → left_ankle
@@ -92,21 +92,21 @@ POSE_CONNECTIONS = [
 
 # A LIST OF SUPPORTED EXERCISES
 EXERCISES: dict[str, Exercise] = {
-    "CAS1": Exercise(
-        id="CAS1", 
-        joints=["elbow", "shoulder"],
-        total_rom={},
+    "SR1": Exercise(
+        id="SR1",
+        joints=["elbow"],
+        total_rom={
+            "right": {"right_elbow": RangeOfMotion(low_angle=-190, high_angle=-100)},
+            "left": {"left_elbow": RangeOfMotion(low_angle=-190, high_angle=-100)}
+        },
         body_vec_directions={
-            "left": {"left_forearm": "right"},
-            "right": {"right_forearm": "left"}
+            "right": {"right_forearm": "left"},
+            "left": {"left_forearm": "right"}
         },
         stretch_angles={
-            "right": {
-                "right_elbow": RangeOfMotion(low_angle=75, high_angle=100),
-                "right_shoulder": RangeOfMotion(low_angle=0, high_angle=0)
-            },
-            "left": {}
+            "right": {"right_elbow": RangeOfMotion(low_angle=-190, high_angle=-100)},
+            "left": {"left_elbow": RangeOfMotion(low_angle=-190, high_angle=-100)}
         },
-        facing_dir="front"
+        facing_dir="left/right"
     )
 }

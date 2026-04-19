@@ -170,7 +170,7 @@ def get_body_position(pose_frame: PoseFrame, exercise: Exercise) -> ExerciseTrac
     else:        
         # checking that user is in position for exercise in dir they are facing
         for body_vec, dir in exercise.body_vec_directions[facing].items():
-            cur_dir = get_vector_direction(body_vec)
+            cur_dir = get_vector_direction(pose_frame, body_vec)
             in_position = cur_dir == dir
             if not in_position:
                 break
