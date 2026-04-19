@@ -41,3 +41,4 @@ def get_video_properties(cap: cv2.VideoCapture) -> dict:
         "height": int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
         "backend": cap.getBackendName(),
     }
+

@@ -12,12 +12,12 @@ This backend is a pure Python service built on Google's **MediaPipe Tasks Vision
 
 ## 🚀 Getting Started
 
-Dependencies are managed with [`uv`](https://github.com/astral-sh/uv) for lightning-fast environments. To launch the live tracking feed:
+Dependencies are managed with [`uv`](https://github.com/astral-sh/uv). To launch the live tracking feed:
 
 ```bash
 cd backend
 uv sync
-uv run iris-track
+uv run python -m src.main
 ```
 
 Press **`q`** on the camera window at any time to exit and view your session's performance metrics.
@@ -34,11 +34,7 @@ Press **`q`** on the camera window at any time to exit and view your session's p
 **Example** — run with an external camera using the fastest model:
 
 ```bash
-uv run iris-track --source 1 --model-complexity 0
-```
-
-> **Note:** Because the CLI script is registered in `pyproject.toml`, `uv run iris-track [flags]` is equivalent to `uv run python -m src.main [flags]`.
-
+uv run python -m src.main [flags]
 ---
 
 ## 🏗️ Directory Architecture
