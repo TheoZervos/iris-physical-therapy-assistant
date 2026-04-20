@@ -1,3 +1,5 @@
+import json
+
 from src.schemas.exercise_schema import Exercise, RangeOfMotion
 
 # Mapping of MediaPipe's 33 pose landmark indices to human-readable names
@@ -91,22 +93,11 @@ POSE_CONNECTIONS = [
 ]
 
 # A LIST OF SUPPORTED EXERCISES
-EXERCISES: dict[str, Exercise] = {
-    "SR1": Exercise(
-        id="SR1",
-        joints=["elbow"],
-        total_rom={
-            "right": {"right_elbow": RangeOfMotion(low_angle=-190, high_angle=-60)},
-            "left": {"left_elbow": RangeOfMotion(low_angle=-190, high_angle=-60)}
-        },
-        body_vec_directions={
-            "right": {"right_forearm": "left"},
-            "left": {"left_forearm": "right"}
-        },
-        stretch_angles={
-            "right": {"right_elbow": RangeOfMotion(low_angle=-165, high_angle=-80)},
-            "left": {"left_elbow": RangeOfMotion(low_angle=-165, high_angle=-80)}
-        },
-        facing_dir="left/right"
-    )
-}
+with open("assets/exercise_specifications.json", "r") as f:
+    raw_exercise_dict = json.loads(f.read())
+
+exercise_dict = {}
+for id, exercise in raw_exercise_dict.items():
+    exercise_dict[id] = Exercise.model_validate(exercise)
+        
+EXERCISES: dict[str, Exercise] = exercise_dict

@@ -238,8 +238,6 @@ def get_joint_angles(
         )
     }
     
-    print(bad_angles)
-    
     return joint_angles, bad_angles
 
 def get_corrections(
