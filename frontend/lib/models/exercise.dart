@@ -32,6 +32,19 @@ class Exercise {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'exerciseName': exerciseName,
+      'tutorialLink': tutorialLink,
+      'exerciseDescription': exerciseDescription,
+      'assetsFolder': assetsFolder,
+      'exerciseId': exerciseId,
+      'exerciseAliases': exerciseAliases,
+      'isFavorite': isFavorite,
+      'muscleRegions': muscleRegions,
+    };
+  }
+
   void toggleFavorite() {
     isFavorite = !isFavorite;
     print(isFavorite);

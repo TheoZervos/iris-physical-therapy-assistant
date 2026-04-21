@@ -9,6 +9,25 @@ class ExerciseListViewModel extends ChangeNotifier {
 
   Future<void> fetchExercises(String jsonFilePath) async {
     final results = await ExerciseService().fetchExercises(jsonFilePath);
+    // empty exercise list
+    if (results['exercises'].isEmpty) {
+      exerciseList = <ExerciseViewModel>[];
+      exerciseByRegion = <String, List<ExerciseViewModel>>{};
+      notifyListeners();
+      return;
+    }
+
+    // creating exercise list object
+    exerciseList = results['exercises']
+        .map<ExerciseViewModel>((exercise) => ExerciseViewModel(exercise))
+        .toList();
+    exerciseByRegion = results['exercisesByMuscleRegion'];
+    notifyListeners();
+    return;
+  }
+
+  Future<void> fetchLikedExercises(String jsonFilePath) async {
+    final results = await ExerciseService().fetchLikedExercises(jsonFilePath);
 
     // empty exercise list
     if (results['exercises'].isEmpty) {

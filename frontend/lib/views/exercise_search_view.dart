@@ -22,6 +22,11 @@ class _ExerciseSearchViewState extends State<ExerciseSearchView> {
   @override
   Widget build(BuildContext context) {
     final appState = Provider.of<AppStateViewModel>(context);
+
+    if (!appState.isInitialized) {
+      return Center(child: CircularProgressIndicator());
+    }
+
     return CustomScrollView(
       slivers: <Widget>[
         SliverAppBar(

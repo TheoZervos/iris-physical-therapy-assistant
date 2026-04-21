@@ -1,16 +1,8 @@
-# frontend
+# UI
+For our project we are using Flutter/Dart and following a 
+Model/View/ViewModel (MVVM) approach. MVVM is a UI methodology where
+you separate models, views, and viewmodels from one another in an
+attempt to have separation of concerns. Please get a basic understanding of
+MVVM before editing code in this directory.
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![alt text](mvvm-pattern.png)
