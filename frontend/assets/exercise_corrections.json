@@ -1,0 +1,12 @@
+{
+    "SR1": {
+        "right_elbow": {
+            "low_angle": "Try to straighten your arm more",
+            "high_angle": "Try to bend your arm more"
+        },
+        "left_elbow": {
+            "low_angle": "Try to straighten your arm more",
+            "high_angle": "Try to bend your arm more"
+        }
+    }
+}

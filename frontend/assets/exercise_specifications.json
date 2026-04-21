@@ -1,0 +1,39 @@
+{
+    "SR1": {
+        "id": "SR1",
+        "joints": ["elbow"],
+        "total_rom": {
+            "right": {
+                "right_elbow": {
+                    "low_angle": -190,
+                    "high_angle": -60
+                }
+            },
+            "left": {
+                "left_elbow": {
+                    "low_angle": -190,
+                    "high_angle": -60
+                }
+            }
+        },
+        "body_vec_directions": {
+            "right": {"right_forearm": "left"},
+            "left": {"left_forearm": "right"}
+        },
+        "stretch_angles": {
+            "right": {
+                "right_elbow": {
+                    "low_angle": -165,
+                    "high_angle": -80
+                }
+            },
+            "left": {
+                "left_elbow": {
+                    "low_angle": -165,
+                    "high_angle": -80
+                }
+            }
+        },
+        "facing_dir": "left/right"
+    }
+}

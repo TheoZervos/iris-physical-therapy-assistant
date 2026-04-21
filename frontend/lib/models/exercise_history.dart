@@ -17,8 +17,4 @@ class ExerciseHistory {
   void clearHistory() {
     exerciseSessions.clear();
   }
-
-  void saveHistoryToJson(String jsonFilePath) async {
-    await ExerciseService().saveExerciseSessionHistory(exerciseSessions, jsonFilePath);
-  }
 }

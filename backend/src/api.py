@@ -10,14 +10,12 @@ Run with::
     uv run uvicorn src.api:app --reload
 """
 
-import asyncio
-import json
 from typing import Optional
 
-from fastapi import FastAPI, Query
+import uvicorn
+from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 
-from src.schemas.exercise_schema import ExerciseTrackingFrame
 from src.services.body_tracking import BodyTracker
 
 # ── App setup ───────────────────────────────────────────────────
@@ -41,27 +39,25 @@ async def track_exercise(
     min_detection_conf: Optional[float] = 0.8,
     min_tracking_conf: Optional[float] = 0.8,
 ):
-    """Stream ``TrackingFrame`` objects as Server-Sent Events (SSE).
-
-    Each event is a JSON-encoded ``TrackingFrame``.  The stream runs
-    indefinitely until the client disconnects.
-
-    Query params:
-        source: ``dummy`` (default) or ``live``.
-        fps: Target frame rate for the stream (default 30).
-    """
     tracker = BodyTracker(
         camera_index=camera_index,
         min_detection_confidence=min_detection_conf,
         min_tracking_confidence=min_tracking_conf
     )
+    
+    try:
+        return StreamingResponse(
+            tracker.process_exercise_stream(exercise_id),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",  # disable nginx buffering if proxied
+            },
+        )
+    
+    finally:
+        tracker.release()
 
-    return StreamingResponse(
-        tracker.process_exercise_stream(exercise_id),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",  # disable nginx buffering if proxied
-        },
-    )
+if __name__ == "__main__":
+    uvicorn.run("api:app", host="127.0.0.1", port=8000, reload=True)
