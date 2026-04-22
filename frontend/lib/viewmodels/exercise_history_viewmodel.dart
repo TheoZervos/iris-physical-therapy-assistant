@@ -28,12 +28,4 @@ class ExerciseHistoryViewModel extends ChangeNotifier {
     exerciseHistory.clearHistory();
     notifyListeners();
   }
-
-  void saveHistoryToJson(String jsonFilePath) async {
-    await ExerciseService().saveExerciseSessionHistory(
-      exerciseHistory.exerciseSessions,
-      jsonFilePath,
-    );
-    notifyListeners();
-  }
 }

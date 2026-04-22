@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/mapping_constants.dart';
+import 'package:frontend/viewmodels/app_state_viewmodel.dart';
 import "package:provider/provider.dart";
 import "package:frontend/viewmodels/viewmodels_lib.dart";
 import 'package:frontend/views/home_view.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:frontend/service_locator.dart';
 import 'package:camera/camera.dart';
 
 late final List<CameraDescription> cameras;
@@ -10,20 +13,22 @@ late UserInfoViewModel userInfo;
 late final ExerciseListViewModel allExercises;
 
 void main() async {
+  // starting backend
   WidgetsFlutterBinding.ensureInitialized();
-  cameras = await availableCameras();
-  userInfo = UserInfoViewModel();
-  allExercises = ExerciseListViewModel();
-  userInfo.fetchUserInfo('assets/user_data');
-  allExercises.fetchExercises('assets/all_exercises.json');
+  await setupLocator();
+  final AppStateViewModel appState = AppStateViewModel();
+  await appState.loadAppState();
+  await ExerciseTrackingMapping.loadExerciseSpecifications(
+    'assets/exercise_specifications.json',
+  );
+  await ExerciseTrackingMapping.loadCorrectionMessages(
+    'assets/exercise_corrections.json',
+  );
+  await ExerciseTrackingMapping.loadExerciseMap('assets/all_exercises.json');
 
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => userInfo),
-        ChangeNotifierProvider(create: (context) => allExercises),
-        Provider<List<CameraDescription>>.value(value: cameras)
-      ],
+    ChangeNotifierProvider(
+      create: (context) => appState,
       child: const IrisApp(),
     ),
   );

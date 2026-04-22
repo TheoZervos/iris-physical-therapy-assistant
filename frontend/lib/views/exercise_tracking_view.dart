@@ -1,4 +1,5 @@
 import 'package:camera/camera.dart';
+import 'package:frontend/viewmodels/app_state_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/viewmodels/viewmodels_lib.dart';
@@ -15,7 +16,7 @@ class ExerciseTrackingView extends StatefulWidget {
 class _ExerciseTrackingViewState extends State<ExerciseTrackingView> {
   @override
   Widget build(BuildContext context) {
-    final availableCameras = context.read<List<CameraDescription>>();
+    final appState = Provider.of<AppStateViewModel>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -24,7 +25,7 @@ class _ExerciseTrackingViewState extends State<ExerciseTrackingView> {
         titleTextStyle: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
       ),
       body: Center(
-        child: ExerciseTrackingPreview(cameras: availableCameras),
+        child: ExerciseTrackingPreview(camera: appState.frontCamera),
         ),
     );
   }

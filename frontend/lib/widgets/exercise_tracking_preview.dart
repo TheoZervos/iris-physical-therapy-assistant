@@ -2,8 +2,8 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
 class ExerciseTrackingPreview extends StatefulWidget {
-  final List<CameraDescription> cameras;
-  const ExerciseTrackingPreview({super.key, required this.cameras});
+  final CameraDescription camera;
+  const ExerciseTrackingPreview({super.key, required this.camera});
 
   @override
   State<ExerciseTrackingPreview> createState() =>
@@ -17,7 +17,7 @@ class _ExerciseTrackingPreviewState extends State<ExerciseTrackingPreview> {
   void initState() {
     super.initState();
     _cameraController = CameraController(
-      widget.cameras[1],
+      widget.camera,
       ResolutionPreset.max,
       enableAudio: false,
     );

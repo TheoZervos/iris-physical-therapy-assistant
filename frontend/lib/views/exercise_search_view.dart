@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/viewmodels/app_state_viewmodel.dart';
 import 'package:frontend/viewmodels/viewmodels_lib.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/widgets/exercise_scroll_list.dart';
@@ -21,9 +22,12 @@ class _ExerciseSearchViewState extends State<ExerciseSearchView> {
 
   @override
   Widget build(BuildContext context) {
-    final allExercises = Provider.of<ExerciseListViewModel>(context);
-    final UserInfoViewModel userInfo = Provider.of<UserInfoViewModel>(context);
-    
+    final appState = Provider.of<AppStateViewModel>(context);
+
+    if (!appState.isInitialized) {
+      return Center(child: CircularProgressIndicator());
+    }
+
     return CustomScrollView(
       slivers: <Widget>[
         SliverAppBar(
@@ -37,8 +41,8 @@ class _ExerciseSearchViewState extends State<ExerciseSearchView> {
           ),
         ),
         ExerciseScrollList(
-          exercises: allExercises,
-          userInfo: userInfo,
+          exercises: appState.allExercises,
+          userInfo: appState.userInfo,
         ),
       ],
     );

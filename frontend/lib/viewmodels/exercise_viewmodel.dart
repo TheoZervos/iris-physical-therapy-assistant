@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/exercise.dart';
+import 'package:frontend/service_locator.dart';
+import 'package:frontend/viewmodels/app_state_viewmodel.dart';
 
 class ExerciseViewModel extends ChangeNotifier {
   final Exercise exercise;
@@ -17,6 +19,8 @@ class ExerciseViewModel extends ChangeNotifier {
 
   void toggleFavorite() {
     exercise.isFavorite = !exercise.isFavorite;
+    final appState = getIt<AppStateViewModel>();
+    appState.addExerciseToFavorites(this);
     notifyListeners();
   }
 }
