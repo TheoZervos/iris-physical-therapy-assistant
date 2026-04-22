@@ -33,5 +33,40 @@
             }
         },
         "facing_dir": "left/right"
+    },
+    "BC1": {
+        "id": "BC1",
+        "joints": ["elbow"],
+        "total_rom": {
+            "right": {
+                "right_elbow": {
+                    "low_angle": -190,
+                    "high_angle": -25 
+                }
+            },
+            "left": {
+                "left_elbow": {
+                    "low_angle": -190,
+                    "high_angle": -25
+                }
+            }
+        },
+        "body_vec_directions": {
+            "right": {"right_forearm": "left"},
+            "left": {"left_forearm": "right"}
+        },
+        "stretch_angles": {
+            "right": {
+                "right_elbow": {
+                    "low_angle": -165,
+                    "high_angle": -40
+                },
+                "left_elbow": {
+                    "low_angle": -165,
+                    "high_angle": -40
+                }
+            }
+        },
+        "facing_dir": "left/right"
     }
 }
