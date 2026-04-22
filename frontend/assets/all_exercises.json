@@ -69,6 +69,26 @@
                 "Teres Minor",
                 "Posterior Deltoid"
             ]
+        },
+        { 
+            "exerciseName": "Lateral Raise",
+            "tutorialLink": "https://www.youtube.com/watch?v=pKgUreKuzuc",
+            "exerciseDescription": "Stand with feet hip-width apart, holding light dumbbells with a slight elbow bend.\nRaise arms to the side until parallel to the floor, leading with your elbows.\nControl the descent, slowly returning to the starting position and repeat." ,
+            "assetsFolder": "assets/images/lateral_raises",
+            "exerciseId": "LR1",
+            "exerciseAliases": [
+                "Side Raises",
+                "Lat Raises",
+                "Side Lateral Raises",
+                "Dumbbell Lateral Raises"
+            ],
+            "isFavorite": false,
+            "muscleRegions": [
+                "Serratus Anterior",
+                "Trapezius",
+                "Anterior Deltoid",
+                "Lateral Deltoid"
+            ]
         }
     ]
 }
