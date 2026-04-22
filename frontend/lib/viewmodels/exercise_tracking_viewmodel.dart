@@ -4,16 +4,16 @@ import 'package:frontend/models/models_lib.dart';
 import 'package:frontend/services/body_tracker_service.dart';
 import 'package:frontend/viewmodels/app_state_viewmodel.dart';
 import 'package:frontend/models/tracking_models/formatted_tracking_feedback.dart';
+import 'package:frontend/service_locator.dart';
 
 class ExerciseTrackingViewModel extends ChangeNotifier {
   late final BodyTrackerService _trackingService;
   final Exercise exercise;
-  final AppStateViewModel appState;
+  late final AppStateViewModel appState;
 
-  ExerciseTrackingViewModel({required this.exercise, required this.appState}) {
-    _trackingService = BodyTrackerService(
-      camera: AppStateViewModel.frontCamera,
-    );
+  ExerciseTrackingViewModel({required this.exercise}) {
+    appState = getIt<AppStateViewModel>();
+    _trackingService = BodyTrackerService(camera: appState.frontCamera);
   }
 
   Stream<FormattedTrackingFeedback> get trackingStream async* {

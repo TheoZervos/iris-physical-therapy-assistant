@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:frontend/viewmodels/app_state_viewmodel.dart';
+import 'package:frontend/viewmodels/viewmodels_lib.dart';
 import 'package:frontend/widgets/exercise_scroll_list.dart';
 
 class FavoriteExerciseSearchView extends StatefulWidget {
@@ -22,7 +22,7 @@ class _FavoriteExerciseSearchViewState extends State<FavoriteExerciseSearchView>
 
   @override
   Widget build(BuildContext context) {
-    final appState = Provider.of<AppStateViewModel>(context);
+    final UserInfoViewModel userInfo = Provider.of<UserInfoViewModel>(context);
 
     return CustomScrollView(
       slivers: <Widget>[
@@ -36,8 +36,8 @@ class _FavoriteExerciseSearchViewState extends State<FavoriteExerciseSearchView>
           ),
         ),
         ExerciseScrollList(
-          exercises: appState.userInfo.favoriteExercises,
-          userInfo: appState.userInfo
+          exercises: userInfo.favoriteExercises,
+          userInfo: userInfo
         ),
       ],
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:frontend/viewmodels/app_state_viewmodel.dart';
+import 'package:frontend/viewmodels/viewmodels_lib.dart';
+import 'package:provider/provider.dart';
 import 'package:frontend/widgets/exercise_scroll_list.dart';
 
 class ExerciseSearchView extends StatefulWidget {

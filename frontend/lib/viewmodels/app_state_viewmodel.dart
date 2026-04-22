@@ -6,7 +6,7 @@ class AppStateViewModel extends ChangeNotifier {
   bool _isInitialized = false;
   late final UserInfoViewModel userInfo;
   late final ExerciseListViewModel allExercises;
-  static late final CameraDescription frontCamera;
+  late final CameraDescription frontCamera;
 
   bool get isInitialized => _isInitialized;
 
