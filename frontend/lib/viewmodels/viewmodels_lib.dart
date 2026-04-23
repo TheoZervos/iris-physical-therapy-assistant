@@ -5,3 +5,5 @@ export 'exercise_list_viewmodel.dart';
 export 'exercise_session_viewmodel.dart';
 export 'user_info_viewmodel.dart';
 export 'exercise_viewmodel.dart';
+export 'app_state_viewmodel.dart';
+export 'exercise_tracking_viewmodel.dart';

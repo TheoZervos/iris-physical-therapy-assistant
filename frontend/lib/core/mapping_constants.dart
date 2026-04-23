@@ -7,7 +7,9 @@ class ExerciseTrackingMapping {
   ExerciseTrackingMapping._(); // Private constructor to prevent instantiation
 
   static late final Map<String, String> exerciseMap;
-  static Future<void> loadExerciseMap(String jsonFilePath) async {
+  static Future<Map<String, String>> loadExerciseMap(
+    String jsonFilePath,
+  ) async {
     try {
       final String jsonString = await rootBundle.loadString(jsonFilePath);
       final Map<String, dynamic> data = json.decode(jsonString);
@@ -18,9 +20,11 @@ class ExerciseTrackingMapping {
         }
       }
       exerciseMap = tempMap;
+      return exerciseMap;
     } catch (e) {
       print("Error loading exercise map: $e");
       exerciseMap = {};
+      return exerciseMap;
     }
   }
 
@@ -121,7 +125,9 @@ class ExerciseTrackingMapping {
   static late final Map<String, ExerciseSpecifications>
   exerciseSpecificationsMap;
 
-  static Future<void> loadExerciseSpecifications(String jsonFilePath) async {
+  static Future<Map<String, ExerciseSpecifications>> loadExerciseSpecifications(
+    String jsonFilePath,
+  ) async {
     try {
       final String jsonString = await rootBundle.loadString(jsonFilePath);
       final data = json.decode(jsonString);
@@ -135,23 +141,28 @@ class ExerciseTrackingMapping {
       });
 
       exerciseSpecificationsMap = tempMap;
-      print(exerciseSpecificationsMap);
+      return exerciseSpecificationsMap;
     } catch (e) {
       print("Error loading exercise specifications: $e");
       exerciseSpecificationsMap = {};
+      return exerciseSpecificationsMap;
     }
   }
 
   static late final Map<String, dynamic> correctionMessageMap;
 
-  static Future<void> loadCorrectionMessages(String jsonFilePath) async {
+  static Future<Map<String, dynamic>> loadCorrectionMessages(
+    String jsonFilePath,
+  ) async {
     try {
       final String jsonString = await rootBundle.loadString(jsonFilePath);
       final data = json.decode(jsonString);
       correctionMessageMap = Map<String, dynamic>.from(data as Map);
+      return correctionMessageMap;
     } catch (e) {
       print("Error loading correction messages: $e");
       correctionMessageMap = {};
+      return correctionMessageMap;
     }
   }
 }

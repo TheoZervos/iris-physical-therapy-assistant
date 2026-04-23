@@ -4,69 +4,86 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:frontend/core/mapping_constants.dart';
 import 'package:frontend/models/tracking_models/tracking_models_lib.dart';
 
+ExerciseTrackingFrame backgroundProcessFrame(Map<String, dynamic> data) {
+  final Pose pose = data["pose"];
+  final String exerciseId = data["exerciseId"];
+  final Map<String, ExerciseSpecifications> exerciseSpecificationsMap =
+      data["specs"];
+  final Map<String, dynamic> correctionMessageMap = data["corrections"];
+  final Map<String, List<int>> jointMap = data["jointMap"];
+  final Map<String, List<int>> bodyVectorsMap = data["bodyVecMap"];
+
+  return processFrame(
+    pose,
+    exerciseId,
+    exerciseSpecificationsMap,
+    correctionMessageMap,
+    jointMap,
+    bodyVectorsMap,
+  );
+}
+
 // BODY POSITION UTIL ---------------------------------------------------------------
-ExerciseTrackingFrame processFrame(Pose pose, String exerciseId) {
-  // making sure all necessary landmarks are present to process frame
-  final exerciseSpecs = ExerciseTrackingMapping.exerciseSpecificationsMap[exerciseId]!;
-  if (!_neededLandmarksPresent(pose, exerciseSpecs.joints)) {
-    return ExerciseTrackingFrame(
-      pose: pose,
-      facing: 'unknown',
-      curSide: 'unknown',
-      curAngles: {},
-      badAngles: {},
-      corrections: [
-        ExerciseCorrection(
-          message: "landmarks_not_visible",
-          severity: "info",
-        ),
-      ],
-      inPosition: false,
-    );
-  }
+ExerciseTrackingFrame processFrame(
+  Pose pose,
+  String exerciseId,
+  Map<String, ExerciseSpecifications> exerciseSpecificationsMap,
+  Map<String, dynamic> correctionMessageMap,
+  Map<String, List<int>> jointMap,
+  Map<String, List<int>> bodyVectorsMap,
+) {
+  final exerciseSpecs = exerciseSpecificationsMap[exerciseId]!;
 
   // getting facing information
   var corrections = List<ExerciseCorrection>.empty(growable: true);
   final facing = getFacingDirection(pose);
+  String? curSide;
+  List<Map<String, double>>? jointAngles;
+  bool inPosition = false;
 
   // ensuring facing the correct direction for exercise
   if (!exerciseSpecs.facingDirection.contains(facing)) {
     corrections.add(
-      ExerciseCorrection(
-        message: "facing_wrong_direction:$facing",
-        severity: "info",
-      ),
+      ExerciseCorrection(message: "facing_wrong_direction", severity: "info"),
     );
-  }
+  } else {
+    // getting current joint angles and bad angles that need correction
+    curSide = _getCurSide(pose, facing, exerciseSpecs, bodyVectorsMap);
+    jointAngles = _getJointAngles(pose, facing, exerciseSpecs, bodyVectorsMap);
+    inPosition =
+        allAnglesInStartingPosition(
+          exerciseSpecs,
+          jointAngles[0],
+          pose,
+          curSide,
+          bodyVectorsMap,
+        ) &&
+        curSide != "unknown";
 
-  // getting current joint angles and bad angles that need correction
-  final curSide = _getCurSide(pose, facing, exerciseSpecs);
-  final jointAngles = _getJointAngles(pose, exerciseSpecs);
-  final inPosition = allAnglesInStartingPosition(pose, exerciseSpecs.totalRangeOfMotion[facing]!);
+    // getting correction messages for not being in starting position
+    if (!inPosition) {
+      corrections.add(
+        ExerciseCorrection(
+          message: "not_in_starting_position",
+          severity: "info",
+        ),
+      );
+    }
 
-  // getting correction messages for not being in starting position
-  if (!inPosition) {
-    corrections.add(
-      ExerciseCorrection(
-        message: "not_in_starting_position",
-        severity: "info",
-      ),
+    // getting correction messages for bad angles
+    corrections.addAll(
+      getCorrections(jointAngles[1], exerciseSpecs.stretchAngles[curSide]!),
     );
+    print(corrections);
   }
-
-  // getting correction messages for bad angles
-  corrections.addAll(getCorrections(
-    jointAngles[1],
-    exerciseSpecs.totalRangeOfMotion[facing]!,
-  ));
 
   // returning frame with all relevant information
   return ExerciseTrackingFrame(
     pose: pose,
     facing: facing,
-    curSide: curSide,
-    curAngles: jointAngles[0],
-    badAngles:jointAngles[1],
+    curSide: curSide ?? "unknown",
+    curAngles: jointAngles != null ? jointAngles[0] : <String, double>{},
+    badAngles: jointAngles != null ? jointAngles[1] : <String, double>{},
     corrections: corrections,
     inPosition: inPosition && exerciseSpecs.facingDirection.contains(facing),
   );
@@ -82,6 +99,9 @@ List<ExerciseCorrection> getCorrections(
 
   // for each bad angle, get the corresponding target angle and determine correction
   for (var entry in badAngles.entries) {
+    print('Bad: $entry');
+    print(targetAngles[entry.key]!.highAngle);
+    print(targetAngles[entry.key]!.lowAngle);
     // high angle
     if (entry.value > targetAngles[entry.key]!.highAngle) {
       corrections.add(
@@ -102,20 +122,28 @@ List<ExerciseCorrection> getCorrections(
     }
   }
 
+  if(corrections.isNotEmpty) print(corrections[0].message);
   return corrections;
 }
 
 String getFacingDirection(Pose pose) {
-  // getting landmarks and ensuring they are present
+  // landmarks for determining facing direction
   final leftShoulder = pose.landmarks[PoseLandmarkType.leftShoulder];
   final rightShoulder = pose.landmarks[PoseLandmarkType.rightShoulder];
   final leftHip = pose.landmarks[PoseLandmarkType.leftHip];
   final rightHip = pose.landmarks[PoseLandmarkType.rightHip];
 
+  if (leftShoulder == null ||
+      rightShoulder == null ||
+      leftHip == null ||
+      rightHip == null) {
+    return "unknown";
+  }
+
   // getting difference in hips and shoulders
-  final xHipDiff = leftHip!.x - rightHip!.x;
+  final xHipDiff = leftHip.x - rightHip.x;
   final zHipDiff = leftHip.z - rightHip.z;
-  final xShoulderDiff = leftShoulder!.x - rightShoulder!.x;
+  final xShoulderDiff = leftShoulder.x - rightShoulder.x;
   final zShoulderDiff = leftShoulder.z - rightShoulder.z;
 
   // get the sum of total differences
@@ -131,70 +159,53 @@ String getFacingDirection(Pose pose) {
 }
 
 bool allAnglesInStartingPosition(
-  Pose pose, 
-  Map<String, RangeOfMotion> targetAngles
+  ExerciseSpecifications exerciseSpecs,
+  Map<String, double> curAngles,
+  Pose pose,
+  String curSide,
+  Map<String, List<int>> bodyVectorsMap,
 ) {
-  for (var entry in targetAngles.entries) {
-    if (!_isInRom(entry.key, pose, entry.value)) {
+  var targetAngles = exerciseSpecs.totalRangeOfMotion[curSide];
+  for (var entry in targetAngles!.entries) {
+    if (!_angleIsInRom(curAngles[entry.key]!, entry.value)) {
       return false;
     }
   }
+
+  var targetBodyVectors = exerciseSpecs.bodyVecDirections[curSide];
+  for (var entry in targetBodyVectors!.entries) {
+    if (!_vectorInDirection(pose, entry.key, entry.value, bodyVectorsMap)) {
+      return false;
+    }
+  }
+
   return true;
 }
 
 // PRIVATE PROCESSING HELPERS --------------------------------------------------------------
 
-bool _neededLandmarksPresent(Pose pose, List<String> joints) {
-  // landmarks for determining facing direction
-  final leftShoulder = pose.landmarks[PoseLandmarkType.leftShoulder];
-  final rightShoulder = pose.landmarks[PoseLandmarkType.rightShoulder];
-  final leftHip = pose.landmarks[PoseLandmarkType.leftHip];
-  final rightHip = pose.landmarks[PoseLandmarkType.rightHip];
-
-  if (leftShoulder == null ||
-      rightShoulder == null ||
-      leftHip == null ||
-      rightHip == null) {
-    return false;
-  }
-
-  // landmarks for determining joint angles
-  for (var joint in joints) {
-    final entry = ExerciseTrackingMapping.jointMap[joint];
-    if (entry == null) {
-      throw ArgumentError('Invalid joint name: $joint');
-    }
-
-    final [baseIndex, vertexIndex, endIndex, sideSign] = entry;
-    if (pose.landmarks[PoseLandmarkType.values[baseIndex]] == null ||
-        pose.landmarks[PoseLandmarkType.values[vertexIndex]] == null ||
-        pose.landmarks[PoseLandmarkType.values[endIndex]] == null) {
-      return false;
-    }
-  }
-  return true;
-}
-
 List<Map<String, double>> _getJointAngles(
   Pose pose,
+  String facing,
   ExerciseSpecifications exerciseSpecs,
+  Map<String, List<int>> bodyVectorsMap,
 ) {
-  final curFacing = getFacingDirection(pose);
-  final curSide = _getCurSide(pose, curFacing, exerciseSpecs);
+  final curFacing = facing;
+  final curSide = _getCurSide(pose, curFacing, exerciseSpecs, bodyVectorsMap);
 
   // getting current joint angles for all joints in exercise specifications
   var jointAngles = exerciseSpecs.joints.asMap().entries.map(
     (entry) => MapEntry(
       "${curSide}_${entry.value}",
-      calculateAngle(pose, entry.value),
+      calculateAngle(pose, "${curSide}_${entry.value}"),
     ),
   );
 
   // getting joint angles that don't meet exercise specifications
   var badAngles = jointAngles.where((entry) {
-    final targetRom = exerciseSpecs.totalRangeOfMotion[entry.key]?[curFacing];
+    final targetRom = exerciseSpecs.stretchAngles[curSide]![entry.key];
     if (targetRom == null) return false;
-    return !_isInRom(entry.key, pose, targetRom);
+    return !_angleIsInRom(entry.value, targetRom);
   });
 
   return [Map.fromEntries(jointAngles), Map.fromEntries(badAngles)];
@@ -204,19 +215,24 @@ String _getCurSide(
   Pose pose,
   String facingDir,
   ExerciseSpecifications exerciseSpecs,
+  Map<String, List<int>> bodyVectorsMap,
 ) {
   // return side of body closest to camera if facing left/right
   if (facingDir == "right") {
-    return "right";
-  } else if (facingDir == "left") {
     return "left";
+  } else if (facingDir == "left") {
+    return "right";
   }
 
   // determine side based on estimation of which side matches directions closest
   for (var side in exerciseSpecs.bodyVecDirections.entries) {
     bool sideFound = true;
     for (var bodyVec in side.value.entries) {
-      var curDir = _getPrimaryVectorDirection(pose, bodyVec.key);
+      var curDir = _getPrimaryVectorDirection(
+        pose,
+        bodyVec.key,
+        bodyVectorsMap,
+      );
       if (curDir != bodyVec.value) {
         sideFound = false;
         break;
@@ -236,8 +252,9 @@ String _getCurSide(
 Map<String, Map<String, dynamic>> _getVectorDirections(
   Pose pose,
   String bodyVec,
+  Map<String, List<int>> bodyVectorsMap,
 ) {
-  final entry = ExerciseTrackingMapping.bodyVectorsMap[bodyVec];
+  final entry = bodyVectorsMap[bodyVec];
   if (entry == null) {
     throw ArgumentError('Invalid body vector name: $bodyVec');
   }
@@ -261,15 +278,19 @@ Map<String, Map<String, dynamic>> _getVectorDirections(
 
   // calculating the likely direction of the vector in each axis
   final directions = {
-    'x': {'dir': xVec > 0 ? 'right' : 'left', 'mag': xVec.abs()},
-    'y': {'dir': yVec > 0 ? 'down' : 'up', 'mag': yVec.abs()},
-    'z': {'dir': zVec > 0 ? 'forward' : 'backward', 'mag': zVec.abs()},
+    'x': {'dir': xVec < 0 ? 'right' : 'left', 'mag': xVec.abs()},
+    'y': {'dir': yVec < 0 ? 'down' : 'up', 'mag': yVec.abs()},
+    'z': {'dir': zVec < 0 ? 'forward' : 'backward', 'mag': zVec.abs()},
   };
   return directions;
 }
 
-String _getPrimaryVectorDirection(Pose pose, String bodyVec) {
-  final directions = _getVectorDirections(pose, bodyVec);
+String _getPrimaryVectorDirection(
+  Pose pose,
+  String bodyVec,
+  Map<String, List<int>> bodyVectorsMap,
+) {
+  final directions = _getVectorDirections(pose, bodyVec, bodyVectorsMap);
 
   String primaryDirection = "unknown";
   double primaryDirectionStrength = 0.0;
@@ -283,9 +304,17 @@ String _getPrimaryVectorDirection(Pose pose, String bodyVec) {
   return primaryDirection;
 }
 
-bool _isInRom(String joint, Pose pose, RangeOfMotion targetRom) {
-  final angle = calculateAngle(pose, joint);
-  return angle >= targetRom.lowAngle && angle <= targetRom.highAngle;
+bool _angleIsInRom(double curAngle, RangeOfMotion targetAngle) {
+  return curAngle >= targetAngle.lowAngle && curAngle <= targetAngle.highAngle;
+}
+
+bool _vectorInDirection(
+  Pose pose,
+  String bodyVec,
+  String targetDir,
+  Map<String, List<int>> bodyVectorsMap,
+) {
+  return _getPrimaryVectorDirection(pose, bodyVec, bodyVectorsMap) == targetDir;
 }
 
 // MATH UTILS -----------------------------------------------------------------------
@@ -297,6 +326,12 @@ double calculateAngle(Pose pose, String joint) {
   }
 
   final [baseIndex, vertexIndex, endIndex, sideSign] = entry;
+  if (pose.landmarks[PoseLandmarkType.values[baseIndex]] == null ||
+      pose.landmarks[PoseLandmarkType.values[vertexIndex]] == null ||
+      pose.landmarks[PoseLandmarkType.values[endIndex]] == null) {
+    return double.nan;
+  }
+
   final base = pose.landmarks[PoseLandmarkType.values[baseIndex]]!;
   final vertex = pose.landmarks[PoseLandmarkType.values[vertexIndex]]!;
   final end = pose.landmarks[PoseLandmarkType.values[endIndex]]!;

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:frontend/models/models_lib.dart';
 import 'package:flutter/services.dart';
@@ -12,7 +13,7 @@ class ExerciseService {
 
     try {
       // nothing in file
-      if (json.isEmpty) {
+      if (json == null || json.isEmpty) {
         return {'exercises': [], 'exercisesByMuscleRegion': {}};
       }
 
@@ -53,11 +54,17 @@ class ExerciseService {
   Future<Map<String, dynamic>> fetchLikedExercises(String jsonFilePath) async {
     try {
       final localFile = File(jsonFilePath);
+
+      if (!await localFile.exists()) {
+        debugPrint("History file not found, returning empty list.");
+        return {'exercises': [], 'exercisesByMuscleRegion': {}};
+      }
+
       final String fileContents = await localFile.readAsString();
       final Map<String, dynamic> json = jsonDecode(fileContents);
 
       // nothing in file
-      if (json.isEmpty) {
+      if (json == null || json.isEmpty) {
         return {'exercises': [], 'exercisesByMuscleRegion': {}};
       }
 
@@ -100,9 +107,20 @@ class ExerciseService {
   ) async {
     try {
       final localFile = File(jsonFilePath);
+
+      // no file
+      if (!await localFile.exists()) {
+        debugPrint("History file not found, returning empty list.");
+        return [];
+      }
+
       final String fileContents = await localFile.readAsString();
       final Map<String, dynamic> json = jsonDecode(fileContents);
 
+      // nothing in file
+      if (json == null || json.isEmpty) {
+        return [];
+      }
 
       return (json['exerciseSessions'] ?? [])
           .map<ExerciseSession>(

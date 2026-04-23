@@ -1,9 +1,16 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/models/tracking_models/formatted_tracking_feedback.dart';
 
 class ExerciseTrackingPreview extends StatefulWidget {
   final CameraDescription camera;
-  const ExerciseTrackingPreview({super.key, required this.camera});
+  final CameraController cameraController;
+
+  const ExerciseTrackingPreview({
+    super.key,
+    required this.camera,
+    required this.cameraController,
+  });
 
   @override
   State<ExerciseTrackingPreview> createState() =>
@@ -11,55 +18,42 @@ class ExerciseTrackingPreview extends StatefulWidget {
 }
 
 class _ExerciseTrackingPreviewState extends State<ExerciseTrackingPreview> {
-  late CameraController _cameraController;
-
-  @override
-  void initState() {
-    super.initState();
-    _cameraController = CameraController(
-      widget.camera,
-      ResolutionPreset.max,
-      enableAudio: false,
-    );
-    _cameraController
-        .initialize()
-        .then((_) {
-          if (!mounted) return;
-          setState(() {});
-        })
-        .catchError((e) {
-          print("Error initializing camera: $e");
-        });
-  }
-
-  @override
-  void dispose() {
-    _cameraController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    print(MediaQuery.of(context).orientation);
     return SafeArea(
       child: Column(
         spacing: 20,
-        children: [
-          // if camera is initialized, show preview, else show loading indicator
-          _cameraController.value.isInitialized ?
-            Expanded(
-              child: ClipRRect(
-                clipBehavior: Clip.antiAlias,
-                borderRadius: BorderRadius.circular(30),
-                child: AspectRatio(
-                    aspectRatio: _cameraController.value.aspectRatio,
-                    child: CameraPreview(_cameraController),
-                  )
-              )
-            ) :  // uninitialized camera, 
-            CircularProgressIndicator(),
-          Text("Body tracking will go here", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
-        ],
+        children: [CameraView(cameraController: widget.cameraController)],
+      ),
+    );
+  }
+}
+
+class CameraView extends StatelessWidget {
+  final CameraController cameraController;
+
+  const CameraView({super.key, required this.cameraController});
+
+  @override
+  Widget build(BuildContext context) {
+    if (!cameraController.value.isInitialized) return Container();
+    final screenSize = MediaQuery.sizeOf(context);
+
+    return SizedBox(
+      height: 0.8*screenSize.height,
+      child: AspectRatio(
+        aspectRatio: 1 / cameraController.value.aspectRatio,
+        child: ClipRRect(
+          clipBehavior: Clip.antiAlias,
+          borderRadius: BorderRadius.circular(30),
+          child: AspectRatio(
+            aspectRatio: cameraController.value.aspectRatio,
+            child: cameraController.value.isInitialized
+                ? CameraPreview(cameraController)
+                : // uninitialized camera,
+                  CircularProgressIndicator(),
+          ),
+        ),
       ),
     );
   }

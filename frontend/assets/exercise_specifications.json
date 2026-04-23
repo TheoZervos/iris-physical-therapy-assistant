@@ -5,14 +5,14 @@
         "total_rom": {
             "right": {
                 "right_elbow": {
-                    "low_angle": -190,
-                    "high_angle": -60
+                    "low_angle": -180,
+                    "high_angle": 0
                 }
             },
             "left": {
                 "left_elbow": {
-                    "low_angle": -190,
-                    "high_angle": -60
+                    "low_angle": -180,
+                    "high_angle": 0
                 }
             }
         },
@@ -23,14 +23,14 @@
         "stretch_angles": {
             "right": {
                 "right_elbow": {
-                    "low_angle": -165,
-                    "high_angle": -80
+                    "low_angle": -175,
+                    "high_angle": -70
                 }
             },
             "left": {
                 "left_elbow": {
-                    "low_angle": -165,
-                    "high_angle": -80
+                    "low_angle": -175,
+                    "high_angle": -70
                 }
             }
         },

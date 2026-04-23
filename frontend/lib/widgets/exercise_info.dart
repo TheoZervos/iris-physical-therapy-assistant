@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/models/tracking_models/exercise_specifications.dart';
 import 'package:frontend/viewmodels/exercise_list_viewmodel.dart';
 import 'package:frontend/viewmodels/exercise_viewmodel.dart';
 import 'package:frontend/views/exercise_tracking_view.dart';
+import 'package:provider/provider.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class ExerciseInfo extends StatefulWidget {
@@ -37,6 +39,10 @@ class _ExerciseInfoState extends State<ExerciseInfo> {
 
   @override
   Widget build(BuildContext context) {
+    final specs = context.read<Map<String, ExerciseSpecifications>>();
+    final corrections = context.read<Map<String, dynamic>>();
+    final jointMap = context.read<Map<String, List<int>>>();
+    final bodyVecMap = context.read<Map<String, List<int>>>();
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -83,7 +89,13 @@ class _ExerciseInfoState extends State<ExerciseInfo> {
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).push(
                     MaterialPageRoute(
-                      builder: (context) => ExerciseTrackingView(exercise: widget.exercise),
+                      builder: (context) => ExerciseTrackingView(
+                        exercise: widget.exercise,
+                        specs: specs,
+                        corrections: corrections,
+                        jointMap: jointMap,
+                        bodyVecMap: bodyVecMap,
+                      ),
                     ),
                   );
                 },

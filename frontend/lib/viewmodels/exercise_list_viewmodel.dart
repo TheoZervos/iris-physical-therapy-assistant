@@ -8,7 +8,16 @@ class ExerciseListViewModel extends ChangeNotifier {
   final Map<String, dynamic> filters = {"filters": {}};
 
   Future<void> fetchExercises(String jsonFilePath) async {
-    final results = await ExerciseService().fetchExercises(jsonFilePath);
+    Map<String, dynamic> results;
+    try {
+      results = await ExerciseService().fetchExercises(jsonFilePath);
+    } catch (e) {
+      exerciseList = <ExerciseViewModel>[];
+      exerciseByRegion = <String, List<ExerciseViewModel>>{};
+      notifyListeners();
+      return;
+    }
+
     // empty exercise list
     if (results['exercises'].isEmpty) {
       exerciseList = <ExerciseViewModel>[];
