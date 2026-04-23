@@ -23,13 +23,13 @@
         "stretch_angles": {
             "right": {
                 "right_elbow": {
-                    "low_angle": -165,
+                    "low_angle": -175,
                     "high_angle": -70
                 }
             },
             "left": {
                 "left_elbow": {
-                    "low_angle": -165,
+                    "low_angle": -175,
                     "high_angle": -70
                 }
             }

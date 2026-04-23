@@ -112,7 +112,7 @@ class BodyTrackerService {
 
   // process each frame
   Future<void> _processFrame(String exerciseId) async {
-    if (DateTime.now().difference(_lastProcess) < Duration(milliseconds: 50)) {
+    if (DateTime.now().difference(_lastProcess) < Duration(milliseconds: 10)) {
       _isProcessing = false;
       return;
     }
