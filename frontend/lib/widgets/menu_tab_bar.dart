@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/main.dart';
 import 'package:frontend/views/views_lib.dart';
 
 class MenuTabBar extends StatefulWidget {
@@ -15,7 +14,7 @@ class _MenuTabBarState extends State<MenuTabBar> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -41,7 +40,6 @@ class _MenuTabBarState extends State<MenuTabBar> with TickerProviderStateMixin {
           ExerciseSearchView(key: const PageStorageKey('all_exercises')),
           FavoriteExerciseSearchView(key: const PageStorageKey('favorites')),
           Center(child: Text('History')),
-          Center(child: Text('Profile')),
         ],
       ),
       bottomNavigationBar: Material(
@@ -54,7 +52,6 @@ class _MenuTabBarState extends State<MenuTabBar> with TickerProviderStateMixin {
             Tab(icon: Icon(Icons.search), text: 'Search'),
             Tab(icon: Icon(Icons.favorite), text: 'Favorites'),
             Tab(icon: Icon(Icons.history), text: 'History'),
-            Tab(icon: Icon(Icons.person), text: 'Profile'),
           ],
         ),
       ),

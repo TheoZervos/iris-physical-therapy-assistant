@@ -12,12 +12,21 @@ class UserInfoViewModel extends ChangeNotifier {
     final localPath = await getApplicationDocumentsDirectory();
     exerciseHistory = ExerciseHistoryViewModel();
     favoriteExercises = ExerciseListViewModel();
-    await exerciseHistory.fetchPastExerciseSessions(
-      "${localPath.path}/exercise_history.json",
-    );
-    await favoriteExercises.fetchLikedExercises(
-      "${localPath.path}/favorite_exercises.json",
-    );
+    try {
+      await exerciseHistory.fetchPastExerciseSessions(
+        "${localPath.path}/exercise_history.json",
+      );
+    } catch (e) {
+      debugPrint("Could not load exercise history");
+    }
+
+    try {
+      await favoriteExercises.fetchLikedExercises(
+        "${localPath.path}/favorite_exercises.json",
+      );
+    } catch (e) {
+      debugPrint("Could not load liked exercises");
+    }
     notifyListeners();
   }
 

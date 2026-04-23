@@ -1,12 +1,15 @@
 {
     "SR1": {
+        "landmarks_not_visible": "I can't see you! Try to position yourself in the center of the screen or move to a better lit area.",
+        "facing_wrong_direction": "You're facing the wrong way! Turn your body either left or right of the camera.",
+        "not_in_starting_position": "Start exercising for me to provide live feedback!",
         "right_elbow": {
-            "low_angle": "Try to straighten your arm more",
-            "high_angle": "Try to bend your arm more"
+            "high_angle": "Try to straighten your arm more! You may also be flexing your arm too much at the end.",
+            "low_angle": "Try to bend your arm more! You may be straightening your arm too much when extending."
         },
         "left_elbow": {
-            "low_angle": "Try to straighten your arm more",
-            "high_angle": "Try to bend your arm more"
+            "high_angle": "Try to straighten your arm more! You may also be flexing your arm too much at the end.",
+            "low_angle": "Try to bend your arm more! You may be straightening your arm too much when extending."
         }
     }
 }

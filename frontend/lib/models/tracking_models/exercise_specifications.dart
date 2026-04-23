@@ -21,36 +21,40 @@ class ExerciseSpecifications {
     return ExerciseSpecifications(
       id: json['id'] as String,
       joints: List<String>.from(json['joints'] ?? []),
+      
       totalRangeOfMotion: (json['total_rom'] as Map<String, dynamic>).map(
-        (side, bodyVec) => MapEntry(
+        (side, jointsMap) => MapEntry(
           side,
-          (bodyVec as Map<String, dynamic>).map(
-            (bodyVec, rom) => MapEntry(
-              bodyVec,
-              RangeOfMotion.fromJson(rom as Map<String, dynamic>),
+          (jointsMap as Map<String, dynamic>).map(
+            (jointName, romJson) => MapEntry(
+              jointName,
+              RangeOfMotion.fromJson(romJson as Map<String, dynamic>),
             ),
           ),
         ),
       ),
+
       bodyVecDirections: (json['body_vec_directions'] as Map<String, dynamic>).map(
-        (side, bodyVec) => MapEntry(
+        (side, vecMap) => MapEntry(
           side,
-          (bodyVec as Map<String, dynamic>).map(
-            (bodyVector, direction) => MapEntry(bodyVector, direction as String),
+          (vecMap as Map<String, dynamic>).map(
+            (part, direction) => MapEntry(part, direction as String),
           ),
         ),
       ),
+
       stretchAngles: (json['stretch_angles'] as Map<String, dynamic>).map(
-        (side, bodyVec) => MapEntry(
+        (side, jointsMap) => MapEntry(
           side,
-          (bodyVec as Map<String, dynamic>).map(
-            (bodyVec, rom) => MapEntry(
-              bodyVec,
-              RangeOfMotion.fromJson(rom as Map<String, dynamic>),
+          (jointsMap as Map<String, dynamic>).map(
+            (jointName, romJson) => MapEntry(
+              jointName,
+              RangeOfMotion.fromJson(romJson as Map<String, dynamic>),
             ),
           ),
         ),
       ),
+
       facingDirection: json['facing_dir'] as String,
     );
   }
