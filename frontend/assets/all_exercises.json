@@ -1,26 +1,8 @@
 {
     "exercises": [
         { 
-            "exerciseName": "Cross Arm Stretch",
-            "tutorialLink": "https://youtu.be/-1K0m5ywRcY?si=uzEGyS0yBZLhmaVG",
-            "exerciseDescription": "This is an exercise to target the rear deltoids and shoulders.\nExtend one arm and using the opposite hand, slowly pull the extended arm across your upper chest.\nContinue pulling until you feel a comfortable stretch in the extended arms shoulder.\nHold this position for 15-30 seconds.",
-            "assetsFolder": "assets/images/cross_arm_stretch",
-            "exerciseId": "CAS1",
-            "exerciseAliases": [
-                "Cross-Body Arm Stretch",
-                "Arm Across Chest Stretch",
-                "Cross-Body Shoulder Stretch"
-            ],
-            "isFavorite": false,
-            "muscleRegions": [
-                "Shoulders", 
-                "Rear Deltoids",
-                "Rotator Cuff"
-            ]
-        },
-        { 
-            "exerciseName": "Standing Row with Band",
-            "tutorialLink": "https://youtu.be/JP2xq33lNF0?si=6lIuAteG52mzUMwR",
+            "exerciseName": "Single Arm Standing Row",
+            "tutorialLink": "https://youtu.be/vwf_-q-r1EA?si=euzx4-7FXzp3nbje",
             "exerciseDescription": "This is a strengthening exercise to target the scapular retractors.\nMake a 3-foot-long loop with an elastic band and tie the ends together. Attach the loop to a doorknob or other stable object.\nStand holding the band with your elbow bent and at your side, as shown in the start position.\nKeep your arm close to your side and slowly pull your elbow straight back.\nSlowly return to the start position and repeat.",
             "assetsFolder": "assets/images/standing_row",
             "exerciseId": "SR1",
@@ -34,40 +16,6 @@
                 "Rhomboids", 
                 "Trapezius",
                 "Latissimus Dorsi"
-            ]
-        },
-        { 
-            "exerciseName": "Internal Rotation with Band",
-            "tutorialLink": "https://youtu.be/7bXPgfGzW9k?si=oGmeJ461j1Swnj4G",
-            "exerciseDescription": "This exercise primarily targets the subscapularis (rotator cuff), pectoralis major, latissimus dorsi, and anterior deltoid.\nMake a 3-foot-long loop with the elastic band and tie the ends together. Attach the loop to a doorknob or other stable object.\nStand holding the band with your elbow bent and at your side, as shown in the start position.\nKeep your elbow close to your side and bring your arm across your body. Optionally, you may place a rolled towel beneath your arm.\nSlowly return to the start position and repeat.\n" ,
-            "assetsFolder": "assets/images/internal_rotation",
-            "exerciseId": "IR1",
-            "exerciseAliases": [
-                "Medial Rotation with Band"
-            ],
-            "isFavorite": false,
-            "muscleRegions": [
-                "Subcapularis",
-                "Pectoralis Major",
-                "Latissimus Dorsi",
-                "Teres Major",
-                "Anterior Deltoid"
-            ]
-        },
-        { 
-            "exerciseName": "External Rotation with Band",
-            "tutorialLink": "https://youtu.be/ybNV36DoRfY?si=71sdwgc5kKaUkDnx",
-            "exerciseDescription": "Make a 3-foot-long loop with the elastic band and tie the ends together.\nAttach the loop to a doorknob or other stable object.\nStand holding the band with your elbow bent and at your side, as shown in the start position.\nKeeping your elbow close to your side, slowly rotate your arm outward.\nSlowly return to the start position and repeat." ,
-            "assetsFolder": "assets/images/external_rotation",
-            "exerciseId": "ER1",
-            "exerciseAliases": [
-                "Lateral Rotation with Band"
-            ],
-            "isFavorite": false,
-            "muscleRegions": [
-                "Infraspinatus",
-                "Teres Minor",
-                "Posterior Deltoid"
             ]
         }
     ]
