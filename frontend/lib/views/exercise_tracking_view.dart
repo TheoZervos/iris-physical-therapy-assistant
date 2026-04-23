@@ -85,18 +85,14 @@ class _ExerciseTrackingViewState extends State<ExerciseTrackingView> {
     super.dispose();
   }
 
- @override
+  @override
   Widget build(BuildContext context) {
     if (_controller == null || _tracker == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Tracking ${widget.exercise.exerciseName}"),
-      ),
+      appBar: AppBar(title: Text("Tracking ${widget.exercise.exerciseName}")),
       body: Column(
         children: [
           SafeArea(
@@ -109,14 +105,15 @@ class _ExerciseTrackingViewState extends State<ExerciseTrackingView> {
                     cameraController: _controller!,
                   ),
                 ),
+
                 StreamBuilder<FormattedTrackingFeedback>(
                   stream: _tracker!.trackingStream,
                   builder: (context, snapshot) {
-                    return Align(
-                      alignment: Alignment.bottomCenter,
-                      child: ExerciseFeedbackOverlay(
-                        dataSnapshot: snapshot,
-                      ),
+                    return Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: ExerciseFeedbackOverlay(dataSnapshot: snapshot)
                     );
                   },
                 ),
@@ -124,15 +121,18 @@ class _ExerciseTrackingViewState extends State<ExerciseTrackingView> {
             ),
           ),
           Center(
-              child: MaterialButton(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                color: Colors.lightBlue,
-                child: Text("End Exercise", style: TextStyle(fontSize: 40)),
-                onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            child: MaterialButton(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
               ),
+              color: Colors.lightBlue,
+              child: Text("End Exercise", style: TextStyle(fontSize: 40)),
+              onPressed: () {
+                appState.saveUserInfoToJson();
+                Navigator.of(context, rootNavigator: true).pop();
+              },
             ),
+          ),
         ],
       ),
     );

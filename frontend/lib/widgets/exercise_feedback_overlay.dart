@@ -30,13 +30,20 @@ class ExerciseFeedbackOverlay extends StatelessWidget {
           feedbackColor = Colors.green.shade800;
       }
 
-      return Center(
-        child: Text(
-          dataSnapshot.data?.correctionMessage != null
-              ? dataSnapshot.data!.correctionMessage
-              : "No correction",
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.black, backgroundColor: feedbackColor, fontSize: 40),
+      return ClipRRect(
+        clipBehavior: Clip.antiAlias,
+        borderRadius: BorderRadius.circular(30),
+        child:  Container(
+          color: feedbackColor,
+          child: Center(
+            child: Text(
+              dataSnapshot.data?.correctionMessage != null
+                  ? dataSnapshot.data!.correctionMessage
+                  : "No correction",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black, fontSize: 40),
+            ),
+          ),
         ),
       );
     }
