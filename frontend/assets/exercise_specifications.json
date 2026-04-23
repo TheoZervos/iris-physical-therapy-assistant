@@ -5,14 +5,14 @@
         "total_rom": {
             "right": {
                 "right_elbow": {
-                    "low_angle": -180,
-                    "high_angle": 0
+                    "low_angle": -190,
+                    "high_angle": -60
                 }
             },
             "left": {
                 "left_elbow": {
-                    "low_angle": -180,
-                    "high_angle": 0
+                    "low_angle": -190,
+                    "high_angle": -60
                 }
             }
         },
@@ -23,17 +23,126 @@
         "stretch_angles": {
             "right": {
                 "right_elbow": {
-                    "low_angle": -175,
-                    "high_angle": -70
+                    "low_angle": -165,
+                    "high_angle": -80
                 }
             },
-            "left": {
+            "left":{
                 "left_elbow": {
-                    "low_angle": -175,
-                    "high_angle": -70
+                    "low_angle": -165,
+                    "high_angle": -80
                 }
             }
         },
         "facing_dir": "left/right"
+    },
+    "BC1": {
+        "id": "BC1",
+        "joints": ["elbow"],
+        "total_rom": {
+            "right": {
+                "right_elbow": {
+                    "low_angle": -190,
+                    "high_angle": -25 
+                }
+            },
+            "left": {
+                "left_elbow": {
+                    "low_angle": -190,
+                    "high_angle": -25
+                }
+            }
+        },
+        "body_vec_directions": {
+            "right": {"right_forearm": "left"},
+            "left": {"left_forearm": "right"}
+        },
+        "stretch_angles": {
+            "right": {
+                "right_elbow": {
+                    "low_angle": -165,
+                    "high_angle": -40
+                }
+            },
+            "left": {
+                "left_elbow": {
+                    "low_angle": -165,
+                    "high_angle": -40
+                }
+            }
+        },
+        "facing_dir": "left/right"
+    },
+    "LR1": {
+        "id": "LR1",
+        "joints": ["shoulder"],
+        "total_rom": {
+            "right": {
+                "right_shoulder": {
+                    "low_angle": -190,
+                    "high_angle": -85 
+                }
+            },
+            "left": {
+                "left_shoulder": {
+                    "low_angle": -190,
+                    "high_angle": -85
+                }
+            }
+        },
+        "body_vec_directions": {
+            "right": {"right_bicep": "right"},
+            "left": {"right_bicep": "right"}
+        },
+        "stretch_angles": {
+            "right": {
+                "right_shoulder": {
+                    "low_angle": -180,
+                    "high_angle": -92
+                }
+            },
+            "left":{
+                "left_shoulder": {
+                    "low_angle": -180,
+                    "high_angle": -92
+                }
+            }
+        },
+        "facing_dir": "front"
+    },
+    "SP1": {
+        "id": "SP1",
+        "joints": ["elbow"],
+        "total_rom": {
+            "right": {
+                "right_elbow": {
+                    "low_angle": 35,
+                    "high_angle": 190
+                }
+            },
+            "left": {
+                "left_elbow": {
+                    "low_angle": 35,
+                    "high_angle": 190
+                }
+            }
+        },
+        "body_vec_directions": {
+            "right": {"right_forearm": "up"},
+            "left": {"left_forearm": "up"}
+        },
+        "stretch_angles": {
+            "right": {
+                "right_elbow": {
+                    "low_angle": 50,
+                    "high_angle": 175
+                },
+                "left_elbow": {
+                    "low_angle": 50,
+                    "high_angle": 175
+                }
+            }
+        },
+        "facing_dir": "front"
     }
 }
