@@ -80,31 +80,31 @@
             "right": {
                 "right_shoulder": {
                     "low_angle": -190,
-                    "high_angle": -85 
+                    "high_angle": -70 
                 }
             },
             "left": {
                 "left_shoulder": {
-                    "low_angle": -190,
-                    "high_angle": -85
+                    "low_angle": -180,
+                    "high_angle": -70
                 }
             }
         },
         "body_vec_directions": {
             "right": {"right_bicep": "right"},
-            "left": {"right_bicep": "right"}
+            "left": {"left_bicep": "left"}
         },
         "stretch_angles": {
             "right": {
                 "right_shoulder": {
                     "low_angle": -180,
-                    "high_angle": -92
+                    "high_angle": -95
                 }
             },
             "left":{
                 "left_shoulder": {
                     "low_angle": -180,
-                    "high_angle": -92
+                    "high_angle": -95
                 }
             }
         },
@@ -116,13 +116,13 @@
         "total_rom": {
             "right": {
                 "right_elbow": {
-                    "low_angle": 35,
+                    "low_angle": 30,
                     "high_angle": 190
                 }
             },
             "left": {
                 "left_elbow": {
-                    "low_angle": 35,
+                    "low_angle": 30,
                     "high_angle": 190
                 }
             }
@@ -135,11 +135,11 @@
             "right": {
                 "right_elbow": {
                     "low_angle": 50,
-                    "high_angle": 175
+                    "high_angle": 170
                 },
                 "left_elbow": {
                     "low_angle": 50,
-                    "high_angle": 175
+                    "high_angle": 170
                 }
             }
         },
