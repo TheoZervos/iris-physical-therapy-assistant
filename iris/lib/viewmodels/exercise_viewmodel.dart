@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import '../models/exercise.dart';
-import '../service_locator.dart';
-import 'app_state_viewmodel.dart';
 
 class ExerciseViewModel extends ChangeNotifier {
   final Exercise exercise;
 
   ExerciseViewModel(this.exercise);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ExerciseViewModel &&
+      exercise == other.exercise;
+  }
 
   get exerciseName => exercise.exerciseName;
   get tutorialLink => exercise.tutorialLink;
@@ -16,11 +21,4 @@ class ExerciseViewModel extends ChangeNotifier {
   get exerciseAliases => exercise.exerciseAliases;
   get isFavorite => exercise.isFavorite;
   get muscleRegions => exercise.muscleRegions;
-
-  void toggleFavorite() {
-    exercise.isFavorite = !exercise.isFavorite;
-    final appState = getIt<AppStateViewModel>();
-    appState.addExerciseToFavorites(this);
-    notifyListeners();
-  }
 }

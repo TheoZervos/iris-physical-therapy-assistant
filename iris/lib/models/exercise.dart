@@ -19,6 +19,12 @@ class Exercise {
     required this.muscleRegions,
   });
 
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Exercise && exerciseId == other.exerciseId;
+  }
+
   factory Exercise.fromJson(Map<String, dynamic> json) {
     return Exercise(
       exerciseName: json['exerciseName'] as String,

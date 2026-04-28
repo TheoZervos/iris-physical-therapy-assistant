@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/viewmodels/app_state_viewmodel.dart';
 import '../models/tracking_models/exercise_specifications.dart';
 import '../viewmodels/exercise_list_viewmodel.dart';
 import '../viewmodels/exercise_viewmodel.dart';
@@ -9,13 +10,13 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 class ExerciseInfo extends StatefulWidget {
   final List<String> images;
   final ExerciseViewModel exercise;
-  final ExerciseListViewModel favoriteExercises;
+  final AppStateViewModel appState;
 
   const ExerciseInfo({
     super.key,
     required this.images,
     required this.exercise,
-    required this.favoriteExercises,
+    required this.appState,
   });
 
   @override
@@ -26,6 +27,7 @@ class _ExerciseInfoState extends State<ExerciseInfo> {
   // for embedded tutorial
   late final String videoId;
   late final YoutubePlayerController _controller;
+  Widget? _cachedVideo;
 
   @override
   void initState() {
@@ -35,6 +37,8 @@ class _ExerciseInfoState extends State<ExerciseInfo> {
       initialVideoId: videoId,
       flags: const YoutubePlayerFlags(autoPlay: false, mute: false),
     );
+
+    _cachedVideo = EmbeddedVideo(videoId: videoId, controller: _controller);
   }
 
   @override
@@ -43,24 +47,23 @@ class _ExerciseInfoState extends State<ExerciseInfo> {
     final corrections = context.read<Map<String, dynamic>>();
     final jointMap = context.read<Map<String, List<int>>>();
     final bodyVecMap = context.read<Map<String, List<int>>>();
+
     return Scaffold(
       appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Padding(padding: EdgeInsets.all(0)),
+            const SizedBox.shrink(), // Cleaner than empty padding
             Text(widget.exercise.exerciseName),
             MaterialButton(
               padding: EdgeInsets.zero,
               onPressed: () {
-                widget.exercise.isFavorite
-                    ? widget.favoriteExercises.removeExercise(widget.exercise)
-                    : widget.favoriteExercises.addExercise(widget.exercise);
-                widget.exercise.toggleFavorite();
-                setState(() {});
+                widget.appState.exerciseIsFavorite(widget.exercise)
+                    ? widget.appState.removeExerciseFromFavorites(widget.exercise)
+                    : widget.appState.addExerciseToFavorites(widget.exercise);
               },
               child: Icon(
-                widget.exercise.isFavorite
+                widget.appState.exerciseIsFavorite(widget.exercise)
                     ? Icons.favorite
                     : Icons.favorite_border,
                 size: 40,
@@ -68,40 +71,56 @@ class _ExerciseInfoState extends State<ExerciseInfo> {
             ),
           ],
         ),
-        titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
+        titleTextStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 30,
+        ),
         centerTitle: true,
       ),
       body: SafeArea(
-        minimum: EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 20,
-          children: [
-            EmbeddedVideo(videoId: videoId, controller: _controller),
-            ExerciseInfoCard(exercise: widget.exercise),
-            Center(
-              child: MaterialButton(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                color: Colors.lightBlue,
-                child: Text("Start Exercise", style: TextStyle(fontSize: 40)),
-                onPressed: () {
-                  Navigator.of(context, rootNavigator: true).push(
-                    MaterialPageRoute(
-                      builder: (context) => ExerciseTrackingView(
-                        exercise: widget.exercise,
-                        specs: specs,
-                        corrections: corrections,
-                        jointMap: jointMap,
-                        bodyVecMap: bodyVecMap,
+        child: SingleChildScrollView(
+          // <--- 1. Add this
+          padding: const EdgeInsets.all(
+            20,
+          ), // Move padding here for better scroll behavior
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min, // Allows column to wrap content
+            children: [
+              _cachedVideo!, // Manual spacing if using older Flutter, or keep spacing: 20
+              ExerciseInfoCard(exercise: widget.exercise),
+              const SizedBox(height: 20),
+              Center(
+                child: MaterialButton(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  color: Colors.lightBlue,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 30,
+                    vertical: 10,
+                  ),
+                  child: const Text(
+                    "Start Exercise",
+                    style: TextStyle(fontSize: 40),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true).push(
+                      MaterialPageRoute(
+                        builder: (context) => ExerciseTrackingView(
+                          exercise: widget.exercise,
+                          specs: specs,
+                          corrections: corrections,
+                          jointMap: jointMap,
+                          bodyVecMap: bodyVecMap,
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -131,9 +150,11 @@ class ExerciseInfoCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              exercise.exerciseName,
-              style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+            Center(
+              child: Text(
+                exercise.exerciseName,
+                style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+              ),
             ),
             ...instructions.map((instruction) {
               return Column(
