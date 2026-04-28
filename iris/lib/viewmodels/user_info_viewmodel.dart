@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'viewmodels_lib.dart';
 import '../services/exercise_services.dart';
-import 'package:path_provider/path_provider.dart';
 
 class UserInfoViewModel extends ChangeNotifier {
   late final ExerciseHistoryViewModel exerciseHistory;

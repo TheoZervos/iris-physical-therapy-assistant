@@ -1,6 +1,3 @@
-import '../../core/mapping_constants.dart';
-import 'exercise_tracking_frame.dart';
-
 class FormattedTrackingFeedback {
   final String exerciseId;
   final String correctionMessage;

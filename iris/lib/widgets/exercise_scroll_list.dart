@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/main.dart';
 import '../viewmodels/viewmodels_lib.dart';
 import '../views/exercise_info_view.dart';
 import 'package:provider/provider.dart';

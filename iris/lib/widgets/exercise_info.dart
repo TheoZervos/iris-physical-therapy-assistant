@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/viewmodels/app_state_viewmodel.dart';
 import '../models/tracking_models/exercise_specifications.dart';
-import '../viewmodels/exercise_list_viewmodel.dart';
 import '../viewmodels/exercise_viewmodel.dart';
 import '../views/exercise_tracking_view.dart';
 import 'package:provider/provider.dart';

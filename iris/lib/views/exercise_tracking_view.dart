@@ -1,14 +1,13 @@
 import 'package:camera/camera.dart';
-import '../main.dart';
+import 'package:frontend/models/models_lib.dart';
+import 'package:provider/provider.dart';
 import '../models/tracking_models/exercise_specifications.dart';
 import '../service_locator.dart';
-import 'views_lib.dart';
 import '../widgets/exercise_feedback_overlay.dart';
 import 'package:flutter/material.dart';
 import '../viewmodels/viewmodels_lib.dart';
 import '../widgets/exercise_tracking_preview.dart';
 import '../models/tracking_models/formatted_tracking_feedback.dart';
-import 'package:provider/provider.dart';
 
 class ExerciseTrackingView extends StatefulWidget {
   final ExerciseViewModel exercise;
@@ -35,8 +34,7 @@ class _ExerciseTrackingViewState extends State<ExerciseTrackingView> {
   ExerciseTrackingViewModel? _tracker;
 
   late final Future<void> _initFuture;
-
-  final appState = getIt<AppStateViewModel>();
+  Duration? sessionLength;
 
   @override
   void initState() {
@@ -91,6 +89,8 @@ class _ExerciseTrackingViewState extends State<ExerciseTrackingView> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    final appState = context.watch<AppStateViewModel>();
+
     return Scaffold(
       appBar: AppBar(title: Text("Tracking ${widget.exercise.exerciseName}")),
       body: Column(
@@ -109,11 +109,12 @@ class _ExerciseTrackingViewState extends State<ExerciseTrackingView> {
                 StreamBuilder<FormattedTrackingFeedback>(
                   stream: _tracker!.trackingStream,
                   builder: (context, snapshot) {
+                    sessionLength = snapshot.data?.timestamp;
                     return Positioned(
                       bottom: 0,
                       left: 0,
                       right: 0,
-                      child: ExerciseFeedbackOverlay(dataSnapshot: snapshot)
+                      child: ExerciseFeedbackOverlay(dataSnapshot: snapshot),
                     );
                   },
                 ),
@@ -128,7 +129,14 @@ class _ExerciseTrackingViewState extends State<ExerciseTrackingView> {
               color: Colors.lightBlue,
               child: Text("End Exercise", style: TextStyle(fontSize: 40)),
               onPressed: () {
-                appState.saveUserInfoToJson();
+                var session = ExerciseSession(
+                  sessionExercise: widget.exercise.exercise,
+                  sessionLength:
+                      sessionLength ??
+                      Duration(hours: 0, minutes: 0, seconds: 0),
+                  date: DateTime.now(),
+                );
+                appState.addExerciseSession(session);
                 Navigator.of(context, rootNavigator: true).pop();
               },
             ),

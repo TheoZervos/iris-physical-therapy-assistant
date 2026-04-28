@@ -39,7 +39,7 @@ class _MenuTabBarState extends State<MenuTabBar> with TickerProviderStateMixin {
         children: [
           ExerciseSearchView(key: const PageStorageKey('all_exercises')),
           FavoriteExerciseSearchView(key: const PageStorageKey('favorites')),
-          Center(child: Text('History')),
+          ExerciseHistoryView(key: const PageStorageKey('history')),
         ],
       ),
       bottomNavigationBar: Material(
