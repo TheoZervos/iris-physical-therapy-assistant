@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:frontend/models/exercise_session.dart";
 import "viewmodels_lib.dart";
 
 class AppStateViewModel extends ChangeNotifier {
@@ -28,7 +29,8 @@ class AppStateViewModel extends ChangeNotifier {
     for (int i = 0; i < userInfo.favoriteExercises.exerciseList.length; i++) {
       var favorite = userInfo.favoriteExercises.exerciseList[i];
       if (allExercises.exerciseList.contains(favorite)) {
-        userInfo.favoriteExercises.exerciseList[i] = allExercises.exerciseList.firstWhere((element) => element == favorite);
+        userInfo.favoriteExercises.exerciseList[i] = allExercises.exerciseList
+            .firstWhere((element) => element == favorite);
       }
     }
 
@@ -42,6 +44,13 @@ class AppStateViewModel extends ChangeNotifier {
     debugPrint("Saving user history to history file");
     await userInfo.saveUserInfoToJson();
     notifyListeners();
+  }
+
+  Future<void> addExerciseSession(ExerciseSession session) async {
+    userInfo.exerciseHistory.exerciseHistory.addSession(session);
+    await userInfo.saveUserInfoToJson();
+    notifyListeners();
+    debugPrint("Added exercise session to history");
   }
 
   bool exerciseIsFavorite(ExerciseViewModel exercise) {

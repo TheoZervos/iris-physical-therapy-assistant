@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import '../models/exercise_history.dart';
+import 'package:frontend/models/exercise_session.dart';
 import '../viewmodels/viewmodels_lib.dart';
 import '../views/exercise_info_view.dart';
 import 'package:provider/provider.dart';
 
 class ExerciseHistoryListTile extends StatelessWidget {
-  const ExerciseHistoryListTile({super.key});
+  final ExerciseSession session;
+
+  const ExerciseHistoryListTile({super.key, required this.session});
 
   @override
   Widget build(BuildContext context) {
@@ -18,19 +20,31 @@ class ExerciseHistoryListTile extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Center(
-              child: Text(
-                exercise.exerciseName,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            )
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text("${session.date.month}-${session.date.day}"),
+                Text("${session.date.year}")
+              ]
+            ),
+           Text(
+              exercise.exerciseName,
+              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              "${session.sessionLength}",
+            ),
           ],
         ),
       ),
       onTap: () {
         Navigator.of(context, rootNavigator: true).push(
           MaterialPageRoute(
-            builder: (context) => ExerciseInfoView(exercise: exercise, favoriteExercises: userInfo.favoriteExercises),
+            builder: (context) => ExerciseInfoView(
+              exercise: exercise,
+              favoriteExercises: userInfo.favoriteExercises,
+            ),
           ),
         );
       },
@@ -39,19 +53,18 @@ class ExerciseHistoryListTile extends StatelessWidget {
 }
 
 class ExerciseHistoryScrollList extends StatelessWidget {
-  final UserInfoViewModel userInfo;
+  final AppStateViewModel appState;
 
-  const ExerciseHistoryScrollList({
-    super.key,
-    required this.userInfo,
-  });
+  const ExerciseHistoryScrollList({super.key, required this.appState});
 
   @override
   Widget build(BuildContext context) {
-    ExerciseHistory exerciseHistory = userInfo.exerciseHistory.exerciseHistory;
-    if (exerciseHistory.exerciseSessions.isEmpty) {
+    UserInfoViewModel userInfo = appState.userInfo;
+    ExerciseHistoryViewModel exerciseHistory = userInfo.exerciseHistory;
+    if (exerciseHistory.exerciseHistory.exerciseSessions.isEmpty) {
       return SliverFillRemaining(
-        hasScrollBody: false, // Prevents unnecessary scroll behavior for a spinner
+        hasScrollBody:
+            false, // Prevents unnecessary scroll behavior for a spinner
         child: Center(
           child: SizedBox(
             width: MediaQuery.sizeOf(context).width * 0.8,
@@ -67,8 +80,14 @@ class ExerciseHistoryScrollList extends StatelessWidget {
 
     return SliverList(
       delegate: SliverChildListDelegate(
-        exerciseHistory.exerciseSessions.map((session) {
-          return const ExerciseHistoryListTile();
+        exerciseHistory.exerciseHistory.exerciseSessions.map((session) {
+          return ChangeNotifierProvider<ExerciseViewModel>.value(
+            value: ExerciseViewModel(session.sessionExercise),
+            child: ChangeNotifierProvider<UserInfoViewModel>.value(
+              value: userInfo,
+              child:  ExerciseHistoryListTile(session: session),
+            ),
+          );
         }).toList(),
       ),
     );

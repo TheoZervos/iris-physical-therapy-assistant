@@ -55,7 +55,6 @@ class ExerciseTrackingViewModel extends ChangeNotifier {
       String correctionMessage;
       if (hasCorrections) {
         var correctionKeys = frame.corrections[0].message.split(":");
-        print(correctionKeys);
         correctionMessage = correctionKeys.length > 1
             ? ExerciseTrackingMapping.correctionMessageMap[exercise
                   .exerciseId][correctionKeys[0]][correctionKeys[1]]
@@ -86,7 +85,6 @@ class ExerciseTrackingViewModel extends ChangeNotifier {
         sessionExercise: exercise,
         date: now,
         sessionLength: sessionLength,
-        analytics: SessionAnalytics(analytics: {}),
       ),
     );
 

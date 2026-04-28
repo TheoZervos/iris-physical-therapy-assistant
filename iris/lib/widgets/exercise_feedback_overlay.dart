@@ -4,7 +4,7 @@ import '../models/tracking_models/formatted_tracking_feedback.dart';
 class ExerciseFeedbackOverlay extends StatelessWidget {
   final AsyncSnapshot<FormattedTrackingFeedback> dataSnapshot;
 
-  ExerciseFeedbackOverlay({required this.dataSnapshot});
+  const ExerciseFeedbackOverlay({super.key, required this.dataSnapshot});
 
   @override
   Widget build(BuildContext context) {

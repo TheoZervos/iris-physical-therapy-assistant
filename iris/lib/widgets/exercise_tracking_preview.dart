@@ -1,6 +1,5 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import '../models/tracking_models/formatted_tracking_feedback.dart';
 
 class ExerciseTrackingPreview extends StatefulWidget {
   final CameraDescription camera;

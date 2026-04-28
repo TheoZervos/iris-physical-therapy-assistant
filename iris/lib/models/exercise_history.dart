@@ -1,5 +1,4 @@
 import "exercise_session.dart";
-import "../services/exercise_services.dart";
 
 class ExerciseHistory {
   late final List<ExerciseSession> exerciseSessions;
