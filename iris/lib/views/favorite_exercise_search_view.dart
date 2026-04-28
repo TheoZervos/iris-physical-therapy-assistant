@@ -11,33 +11,16 @@ class FavoriteExerciseSearchView extends StatefulWidget {
 }
 
 class _FavoriteExerciseSearchViewState extends State<FavoriteExerciseSearchView> {
-  late TextEditingController textController;
-
-  @override
-  void initState() {
-
-    super.initState();
-    textController = TextEditingController();
-  }
 
   @override
   Widget build(BuildContext context) {
-    final UserInfoViewModel userInfo = Provider.of<UserInfoViewModel>(context);
+    final AppStateViewModel appState = Provider.of<AppStateViewModel>(context);
 
     return CustomScrollView(
       slivers: <Widget>[
-        SliverAppBar(
-          floating: true,
-          snap: true,
-          title: SearchBar(
-            leading: Icon(Icons.search),
-            hintText: "Search favorite exercises...",
-            controller: textController,
-          ),
-        ),
         ExerciseScrollList(
-          exercises: userInfo.favoriteExercises,
-          userInfo: userInfo
+          appState: appState,
+          isFavoritesList: true,
         ),
       ],
     );

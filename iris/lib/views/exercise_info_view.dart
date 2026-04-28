@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../viewmodels/viewmodels_lib.dart';
 import 'package:flutter/services.dart';
 import '../widgets/exercise_info.dart';
@@ -21,6 +22,7 @@ class ExerciseInfoView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppStateViewModel appState = Provider.of<AppStateViewModel>(context);
     return FutureBuilder<List<String>>(
       future: _loadImages(),
       builder: (context, snapshot) {
@@ -36,7 +38,7 @@ class ExerciseInfoView extends StatelessWidget {
         return ExerciseInfo(
           images: snapshot.data != null ? snapshot.data! : [],
           exercise: exercise,
-          favoriteExercises: favoriteExercises,
+          appState: appState,
         );
       },
     );

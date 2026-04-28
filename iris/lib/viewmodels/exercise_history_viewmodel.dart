@@ -6,12 +6,28 @@ import "../services/exercise_services.dart";
 class ExerciseHistoryViewModel extends ChangeNotifier {
   late final ExerciseHistory exerciseHistory;
 
-  Future<void> fetchPastExerciseSessions(String jsonFilePath) async {
-    final List<ExerciseSession> sessionHistory = await ExerciseService()
-        .fetchExerciseSessionHistory(jsonFilePath);
+  Future<void> fetchPastExerciseSessions() async {
+    List<ExerciseSession> results;
+    try {
+      results = await ExerciseService().fetchExerciseSessionHistory();
+    } catch (e) {
+      debugPrint("Error reading exercise history: $e");
+      exerciseHistory = ExerciseHistory(exerciseSessions: <ExerciseSession>[]);
+      notifyListeners();
+      return;
+    }
 
-    exerciseHistory = ExerciseHistory(exerciseSessions: sessionHistory);
+    // empty exercise list
+    if (results.isEmpty) {
+      debugPrint("Empty exercise history file");
+      exerciseHistory = ExerciseHistory(exerciseSessions: <ExerciseSession>[]);
+      notifyListeners();
+      return;
+    }
+
+    exerciseHistory = ExerciseHistory(exerciseSessions: results);
     notifyListeners();
+    return;
   }
 
   void removeSession(ExerciseSession session) {

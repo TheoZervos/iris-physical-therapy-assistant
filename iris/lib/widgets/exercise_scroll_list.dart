@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/main.dart';
 import '../viewmodels/viewmodels_lib.dart';
 import '../views/exercise_info_view.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ class ExerciseListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final exercise = context.watch<ExerciseViewModel>();
     final userInfo = context.watch<UserInfoViewModel>();
+    final appState = context.watch<AppStateViewModel>();
 
     return ListTile(
       minTileHeight: 110,
@@ -24,7 +26,7 @@ class ExerciseListTile extends StatelessWidget {
                 image: AssetImage(
                   '${exercise.assetsFolder}/${exercise.exerciseName.toLowerCase().replaceAll(" ", "_")}_thumbnail.png',
                 ),
-              )
+              ),
             ),
             Column(
               children: [
@@ -41,13 +43,12 @@ class ExerciseListTile extends StatelessWidget {
             MaterialButton(
               padding: EdgeInsets.zero,
               onPressed: () {
-                exercise.isFavorite
-                    ? userInfo.favoriteExercises.removeExercise(exercise)
-                    : userInfo.favoriteExercises.addExercise(exercise);
-                exercise.toggleFavorite();
+                appState.exerciseIsFavorite(exercise)
+                    ? appState.removeExerciseFromFavorites(exercise)
+                    : appState.addExerciseToFavorites(exercise);
               },
               child: Icon(
-                exercise.isFavorite ? Icons.favorite : Icons.favorite_border,
+                appState.exerciseIsFavorite(exercise) ? Icons.favorite : Icons.favorite_border,
                 size: 40,
               ),
             ),
@@ -57,7 +58,10 @@ class ExerciseListTile extends StatelessWidget {
       onTap: () {
         Navigator.of(context, rootNavigator: true).push(
           MaterialPageRoute(
-            builder: (context) => ExerciseInfoView(exercise: exercise, favoriteExercises: userInfo.favoriteExercises),
+            builder: (context) => ExerciseInfoView(
+              exercise: exercise,
+              favoriteExercises: userInfo.favoriteExercises,
+            ),
           ),
         );
       },
@@ -66,25 +70,31 @@ class ExerciseListTile extends StatelessWidget {
 }
 
 class ExerciseScrollList extends StatelessWidget {
-  final ExerciseListViewModel exercises;
-  final UserInfoViewModel userInfo;
+  final AppStateViewModel appState;
+  final bool isFavoritesList;
 
   const ExerciseScrollList({
     super.key,
-    required this.exercises,
-    required this.userInfo,
+    required this.appState,
+    required this.isFavoritesList,
   });
 
   @override
   Widget build(BuildContext context) {
+    late final ExerciseListViewModel exercises;
+    final userInfo = appState.userInfo;
+    if (isFavoritesList) {
+      exercises = userInfo.favoriteExercises;
+    } else {
+      exercises = appState.allExercises;
+    }
+
     if (exercises.exerciseList.isEmpty) {
       return const SliverFillRemaining(
-        hasScrollBody: false, // Prevents unnecessary scroll behavior for a spinner
+        hasScrollBody:
+            false, // Prevents unnecessary scroll behavior for a spinner
         child: Center(
-          child: Text(
-            "This list is empty.",
-            style: TextStyle(fontSize: 18),
-          ),
+          child: Text("This list is empty.", style: TextStyle(fontSize: 18)),
         ),
       );
     }
@@ -96,7 +106,10 @@ class ExerciseScrollList extends StatelessWidget {
             value: exercise,
             child: ChangeNotifierProvider<UserInfoViewModel>.value(
               value: userInfo,
-              child: const ExerciseListTile(),
+              child: ChangeNotifierProvider<AppStateViewModel>.value(
+                value: appState,
+                child: const ExerciseListTile(),
+              ),
             ),
           );
         }).toList(),

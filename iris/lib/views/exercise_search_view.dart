@@ -12,13 +12,6 @@ class ExerciseSearchView extends StatefulWidget {
 }
 
 class _ExerciseSearchViewState extends State<ExerciseSearchView> {
-  late TextEditingController textController;
-
-  @override
-  void initState() {
-    super.initState();
-    textController = TextEditingController();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,19 +23,9 @@ class _ExerciseSearchViewState extends State<ExerciseSearchView> {
 
     return CustomScrollView(
       slivers: <Widget>[
-        SliverAppBar(
-          floating: true,
-          snap: true,
-          centerTitle: true,
-          title: SearchBar(
-            leading: Icon(Icons.search),
-            hintText: "Search exercises...",
-            controller: textController,
-          ),
-        ),
         ExerciseScrollList(
-          exercises: appState.allExercises,
-          userInfo: appState.userInfo,
+          appState: appState,
+          isFavoritesList: false,
         ),
       ],
     );

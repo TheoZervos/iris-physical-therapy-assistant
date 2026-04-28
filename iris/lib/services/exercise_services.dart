@@ -46,17 +46,18 @@ class ExerciseService {
         'exercisesByMuscleRegion': muscleGroupedExercises,
       };
     } catch (e) {
-      print('Error parsing exercises: $e');
+      debugPrint('Error parsing exercises: $e');
       return {'exercises': [], 'exercisesByMuscleRegion': {}};
     }
   }
 
-  Future<Map<String, dynamic>> fetchLikedExercises(String jsonFilePath) async {
+  Future<Map<String, dynamic>> fetchFavoriteExercises() async {
     try {
-      final localFile = File(jsonFilePath);
+      final path = await _getLocalPath();
+      final localFile = File("$path/favorite_exercises.json");
 
       if (!await localFile.exists()) {
-        debugPrint("History file not found, returning empty list.");
+        debugPrint("Liked exercises file not found, returning empty list.");
         return {'exercises': [], 'exercisesByMuscleRegion': {}};
       }
 
@@ -97,16 +98,15 @@ class ExerciseService {
         'exercisesByMuscleRegion': muscleGroupedExercises,
       };
     } catch (e) {
-      print('Error parsing exercises: $e');
+      debugPrint('Error parsing exercises: $e');
       return {'exercises': [], 'exercisesByMuscleRegion': {}};
     }
   }
 
-  Future<List<ExerciseSession>> fetchExerciseSessionHistory(
-    String jsonFilePath,
-  ) async {
+  Future<List<ExerciseSession>> fetchExerciseSessionHistory() async {
     try {
-      final localFile = File(jsonFilePath);
+      final path = await _getLocalPath();
+      final localFile = File('$path/exercise_history.json');
 
       // no file
       if (!await localFile.exists()) {
@@ -128,7 +128,7 @@ class ExerciseService {
           )
           .toList();
     } catch (e) {
-      print('Error parsing exercise session history: $e');
+      debugPrint('Error parsing exercise session history: $e');
       return [];
     }
   }
@@ -139,9 +139,9 @@ class ExerciseService {
     List<ExerciseSession> exerciseSessions,
   ) async {
     try {
-      final localPath = await getApplicationDocumentsDirectory();
-      final favoritesFile = File('${localPath.path}/favorite_exercises.json');
-      final historyFile = File('${localPath.path}/exercise_history.json');
+      final path = await _getLocalPath();
+      final favoritesFile = File('$path/favorite_exercises.json');
+      final historyFile = File('$path/exercise_history.json');
 
       //saving favorites
       final contents = jsonEncode({
@@ -161,8 +161,13 @@ class ExerciseService {
       });
       await historyFile.writeAsString(historyContents);
     } catch (e) {
-      print('Error accessing local files: $e');
+      debugPrint('Error accessing local files: $e');
       return;
     }
+  }
+
+  Future<String> _getLocalPath() async {
+    final directory = await getApplicationDocumentsDirectory();
+    return directory.path;
   }
 }

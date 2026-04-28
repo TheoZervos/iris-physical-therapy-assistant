@@ -12,6 +12,7 @@ class ExerciseListViewModel extends ChangeNotifier {
     try {
       results = await ExerciseService().fetchExercises(jsonFilePath);
     } catch (e) {
+      debugPrint("Error fetching exercises: $e");
       exerciseList = <ExerciseViewModel>[];
       exerciseByRegion = <String, List<ExerciseViewModel>>{};
       notifyListeners();
@@ -35,11 +36,21 @@ class ExerciseListViewModel extends ChangeNotifier {
     return;
   }
 
-  Future<void> fetchLikedExercises(String jsonFilePath) async {
-    final results = await ExerciseService().fetchLikedExercises(jsonFilePath);
+  Future<void> fetchLikedExercises() async {
+    Map<String, dynamic> results;
+    try {
+      results = await ExerciseService().fetchFavoriteExercises();
+    } catch (e) {
+      debugPrint("Error fetching liked exercises: $e");
+      exerciseList = <ExerciseViewModel>[];
+      exerciseByRegion = <String, List<ExerciseViewModel>>{};
+      notifyListeners();
+      return;
+    }
 
     // empty exercise list
     if (results['exercises'].isEmpty) {
+      debugPrint("Liked exercises file empty");
       exerciseList = <ExerciseViewModel>[];
       exerciseByRegion = <String, List<ExerciseViewModel>>{};
       notifyListeners();
