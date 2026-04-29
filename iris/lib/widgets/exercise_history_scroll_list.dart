@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/exercise_session.dart';
+import '../utils/utils.dart';
 import '../viewmodels/viewmodels_lib.dart';
 import '../views/exercise_info_view.dart';
 import 'package:provider/provider.dart';
@@ -20,20 +21,38 @@ class ExerciseHistoryListTile extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text("${session.date.month}-${session.date.day}"),
-                Text("${session.date.year}")
-              ]
-            ),
-           Text(
-              exercise.exerciseName,
-              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+            SafeArea(
+              minimum: EdgeInsets.all(5),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "${session.date.month}-${session.date.day}",
+                    style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+                  ),
+                  Text("${session.date.year}"),
+                ],
+              ),
             ),
             Text(
-              "${session.sessionLength}",
+              exercise.exerciseName,
+              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            SafeArea(
+              minimum: EdgeInsets.all(5),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "${session.sessionLength.inMinutes}:${formatSeconds(session.sessionLength.inMinutes)}",
+                    style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+                  ),
+                  Text("Duration"),
+                ],
+              ),
             ),
           ],
         ),
@@ -85,7 +104,7 @@ class ExerciseHistoryScrollList extends StatelessWidget {
             value: ExerciseViewModel(session.sessionExercise),
             child: ChangeNotifierProvider<UserInfoViewModel>.value(
               value: userInfo,
-              child:  ExerciseHistoryListTile(session: session),
+              child: ExerciseHistoryListTile(session: session),
             ),
           );
         }).toList(),

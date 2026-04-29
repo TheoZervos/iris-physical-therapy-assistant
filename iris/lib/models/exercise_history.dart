@@ -10,7 +10,7 @@ class ExerciseHistory {
   }
 
   void addSession(ExerciseSession session) {
-    exerciseSessions.add(session);
+    exerciseSessions.insert(0, session);
   }
 
   void clearHistory() {
