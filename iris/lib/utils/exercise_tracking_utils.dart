@@ -49,16 +49,25 @@ ExerciseTrackingFrame processFrame(
   } else {
     // getting current joint angles and bad angles that need correction
     curSide = _getCurSide(pose, facing, exerciseSpecs, bodyVectorsMap);
-    jointAngles = _getJointAngles(pose, facing, exerciseSpecs, bodyVectorsMap);
-    inPosition =
-        allAnglesInStartingPosition(
-          exerciseSpecs,
-          jointAngles[0],
-          pose,
-          curSide,
-          bodyVectorsMap,
-        ) &&
-        curSide != "unknown";
+    print(curSide);
+    if (curSide != "unknown") {
+      jointAngles = _getJointAngles(
+        pose,
+        facing,
+        exerciseSpecs,
+        bodyVectorsMap,
+      );
+      inPosition = allAnglesInStartingPosition(
+        exerciseSpecs,
+        jointAngles[0],
+        pose,
+        curSide,
+        bodyVectorsMap,
+      );
+    } else {
+      inPosition = false;
+      jointAngles = null;
+    }
 
     // getting correction messages for not being in starting position
     if (!inPosition) {
@@ -71,10 +80,11 @@ ExerciseTrackingFrame processFrame(
     }
 
     // getting correction messages for bad angles
-    corrections.addAll(
-      getCorrections(jointAngles[1], exerciseSpecs.stretchAngles[curSide]!),
-    );
-    print(corrections);
+    if (inPosition) {
+      corrections.addAll(
+        getCorrections(jointAngles![1], exerciseSpecs.stretchAngles[curSide]!),
+      );
+    }
   }
 
   // returning frame with all relevant information
@@ -99,9 +109,6 @@ List<ExerciseCorrection> getCorrections(
 
   // for each bad angle, get the corresponding target angle and determine correction
   for (var entry in badAngles.entries) {
-    print('Bad: $entry');
-    print(targetAngles[entry.key]!.highAngle);
-    print(targetAngles[entry.key]!.lowAngle);
     // high angle
     if (entry.value > targetAngles[entry.key]!.highAngle) {
       corrections.add(
@@ -122,7 +129,6 @@ List<ExerciseCorrection> getCorrections(
     }
   }
 
-  if(corrections.isNotEmpty) print(corrections[0].message);
   return corrections;
 }
 
@@ -245,7 +251,7 @@ String _getCurSide(
     }
   }
 
-  // side could not be determined, maybe not in position?
+  // side could not be determined, maybe not in position? (default to front to avoid crashing)
   return "unknown";
 }
 
@@ -279,8 +285,8 @@ Map<String, Map<String, dynamic>> _getVectorDirections(
   // calculating the likely direction of the vector in each axis
   final directions = {
     'x': {'dir': xVec < 0 ? 'right' : 'left', 'mag': xVec.abs()},
-    'y': {'dir': yVec < 0 ? 'down' : 'up', 'mag': yVec.abs()},
-    'z': {'dir': zVec < 0 ? 'forward' : 'backward', 'mag': zVec.abs()},
+    'y': {'dir': yVec < 0 ? 'up' : 'down', 'mag': yVec.abs()},
+    'z': {'dir': zVec < 0 ? 'forward' : 'backward', 'mag': 0},
   };
   return directions;
 }
@@ -301,6 +307,7 @@ String _getPrimaryVectorDirection(
     }
   }
 
+  print(primaryDirection);
   return primaryDirection;
 }
 
