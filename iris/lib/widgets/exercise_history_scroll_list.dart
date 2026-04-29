@@ -14,8 +14,60 @@ class ExerciseHistoryListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final exercise = context.watch<ExerciseViewModel>();
     final userInfo = context.watch<UserInfoViewModel>();
+    final appState = context.watch<AppStateViewModel>();
 
     return ListTile(
+      onLongPress: () => {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              insetPadding: const EdgeInsets.symmetric(horizontal: 20), 
+              title: const Text(
+                "Delete session from history?",
+                style: TextStyle(color: Colors.white, fontSize: 35, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              content: const Padding(
+                padding: EdgeInsets.only(top: 10),
+                child: Text(
+                  "This action cannot be undone.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white70, fontSize: 20),
+                ),
+              ),
+              actionsAlignment: MainAxisAlignment.spaceAround,
+              actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              actions: <Widget>[
+                TextButton(
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(120, 50),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    "Go Back",
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.shade700,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(140, 50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 4,
+                  ),
+                  onPressed: () {
+                    appState.removeExerciseSession(session);
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Delete", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          },
+        ),
+      },
       minTileHeight: 110,
       title: Center(
         child: Row(
