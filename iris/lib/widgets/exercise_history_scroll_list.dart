@@ -47,7 +47,7 @@ class ExerciseHistoryListTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    "${session.sessionLength.inMinutes}:${formatSeconds(session.sessionLength.inMinutes)}",
+                    "${session.sessionLength.inMinutes}:${formatSeconds(session.sessionLength.inSeconds)}",
                     style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
                   ),
                   Text("Duration"),
