@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/exercise_session.dart';
+import '../utils/utils.dart';
 import '../viewmodels/viewmodels_lib.dart';
 import '../views/exercise_info_view.dart';
 import 'package:provider/provider.dart';
@@ -13,27 +14,97 @@ class ExerciseHistoryListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final exercise = context.watch<ExerciseViewModel>();
     final userInfo = context.watch<UserInfoViewModel>();
+    final appState = context.watch<AppStateViewModel>();
 
     return ListTile(
+      onLongPress: () => {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              insetPadding: const EdgeInsets.symmetric(horizontal: 20), 
+              title: const Text(
+                "Delete session from history?",
+                style: TextStyle(color: Colors.white, fontSize: 35, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              content: const Padding(
+                padding: EdgeInsets.only(top: 10),
+                child: Text(
+                  "This action cannot be undone.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white70, fontSize: 20),
+                ),
+              ),
+              actionsAlignment: MainAxisAlignment.spaceAround,
+              actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              actions: <Widget>[
+                TextButton(
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(120, 50),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    "Go Back",
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.shade700,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(140, 50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 4,
+                  ),
+                  onPressed: () {
+                    appState.removeExerciseSession(session);
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Delete", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          },
+        ),
+      },
       minTileHeight: 110,
       title: Center(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text("${session.date.month}-${session.date.day}"),
-                Text("${session.date.year}")
-              ]
-            ),
-           Text(
-              exercise.exerciseName,
-              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+            SafeArea(
+              minimum: EdgeInsets.all(5),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "${session.date.month}-${session.date.day}",
+                    style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+                  ),
+                  Text("${session.date.year}"),
+                ],
+              ),
             ),
             Text(
-              "${session.sessionLength}",
+              exercise.exerciseName,
+              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            SafeArea(
+              minimum: EdgeInsets.all(5),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "${session.sessionLength.inMinutes}:${formatSeconds(session.sessionLength.inSeconds)}",
+                    style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+                  ),
+                  Text("Duration"),
+                ],
+              ),
             ),
           ],
         ),
@@ -85,7 +156,7 @@ class ExerciseHistoryScrollList extends StatelessWidget {
             value: ExerciseViewModel(session.sessionExercise),
             child: ChangeNotifierProvider<UserInfoViewModel>.value(
               value: userInfo,
-              child:  ExerciseHistoryListTile(session: session),
+              child: ExerciseHistoryListTile(session: session),
             ),
           );
         }).toList(),

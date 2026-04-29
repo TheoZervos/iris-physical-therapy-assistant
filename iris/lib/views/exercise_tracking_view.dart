@@ -92,7 +92,15 @@ class _ExerciseTrackingViewState extends State<ExerciseTrackingView> {
     final appState = context.watch<AppStateViewModel>();
 
     return Scaffold(
-      appBar: AppBar(title: Text("Tracking ${widget.exercise.exerciseName}")),
+      appBar: AppBar(
+        title: Center(
+          child: Text(
+            "Tracking ${widget.exercise.exerciseName}",
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+          ), 
+        ),
+        automaticallyImplyLeading: false,
+      ),
       body: Column(
         children: [
           SafeArea(

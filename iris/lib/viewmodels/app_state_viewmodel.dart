@@ -53,6 +53,13 @@ class AppStateViewModel extends ChangeNotifier {
     debugPrint("Added exercise session to history");
   }
 
+  Future<void> removeExerciseSession(ExerciseSession session) async {
+    userInfo.exerciseHistory.exerciseHistory.removeSession(session);
+    await userInfo.saveUserInfoToJson();
+    notifyListeners();
+    debugPrint("Removed exercise session from history");
+  }
+
   bool exerciseIsFavorite(ExerciseViewModel exercise) {
     return userInfo.favoriteExercises.exerciseList.contains(exercise);
   }
