@@ -18,11 +18,11 @@
         "not_in_starting_position": "Start exercising for me to provide live feedback!",
         "right_elbow": {
             "high_angle": "You're flexing too far. You may be flexing your arm too much at the end.",
-            "low_angle": "Try to bend your arm more! You may be straightening your arm too much when extending."
+            "low_angle": "Your arm is too straight! You may be straightening your arm too much when going down."
         },
         "left_elbow": {
             "high_angle": "You're flexing too far. You may be flexing your arm too much at the end.",
-            "low_angle": "Try to bend your arm more! You may be straightening your arm too much when extending."
+            "low_angle": "Your arm is too straight! You may be straightening your arm too much when going down."
         }
     },
     "SP1": {
